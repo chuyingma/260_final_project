@@ -1,0 +1,722 @@
+---
+title: "Prepare_data02"
+author: "Chuying Ma"
+date: "11/20/2017"
+output: html_document
+---
+
+BST 260 Final Project
+Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
+
+This Rmd file is for data cleaning and aggregating BRFSS data into county level for the year 2002
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+library we need:
+```{r}
+library(SASxport)
+library(maps)
+library(dplyr)
+library(tidyverse)
+library(tidyr)
+```
+
+try to aggregate for the data in 2000
+```{r}
+data_02 = read.xport("~/Desktop/Harvard/fall 2017/bst260/project/cdbrfs02.xpt")
+names(data_02)
+```
+
+select useful columns:
+```{r}
+dat_col_02 = data_02 %>%
+  select(X.STATE,CTYCODE,IMONTH,MENTHLTH,CVDINFR2,CVDCRHD2,CVDSTRK2,ASTHMA2,AGE,SEX,ORACE2,EDUCA,INCOME2,MARITAL,EMPLOY,HLTHPLAN,EXERANY2,X.RFSMOK2,DRNKANY3,X.BMI2CAT,X.BMI2,GENHLTH,QLACTLM2)
+
+```
+
+create fips and create year variable:
+```{r}
+dat_col_02 = dat_col_02 %>%
+  filter(!is.na(CTYCODE) & !is.na(X.STATE)) %>%
+  mutate(fips = 1000* as.numeric(X.STATE) + as.numeric(CTYCODE)) %>%
+  mutate(year = 2002) %>%
+  select(fips, X.STATE,CTYCODE,IMONTH,MENTHLTH,CVDINFR2,CVDCRHD2,CVDSTRK2,ASTHMA2,AGE,SEX,ORACE2,EDUCA,INCOME2,MARITAL,EMPLOY,HLTHPLAN,EXERANY2,X.RFSMOK2,DRNKANY3,X.BMI2CAT,X.BMI2,GENHLTH,QLACTLM2)
+
+```
+
+start aggregate into county level:
+1.start with menthlth
+```{r}
+menthlth = dat_col_02 %>%
+  select(fips,MENTHLTH) %>%
+  filter(!is.na(MENTHLTH) & MENTHLTH != 77 & MENTHLTH != 88 & MENTHLTH != 99) %>%
+  group_by(fips) %>%
+  dplyr::summarise(menthlth = mean(MENTHLTH))
+```
+
+2.hearattack
+```{r}
+count_fips = dat_col_02 %>%
+  select(fips,CVDINFR2) %>%
+  filter(!is.na(CVDINFR2) & CVDINFR2 != 7 & CVDINFR2 != 9) %>%
+  group_by(fips) %>%
+  dplyr::summarise(countF = n())
+  
+count_h = dat_col_02 %>%
+  group_by(fips,CVDINFR2) %>%
+  dplyr::summarise(n = n())
+
+tab_heart = count_h %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(hearattack = n/countF) %>%
+  filter(!is.na(CVDINFR2) & CVDINFR2 == 1) %>%
+  select(fips,hearattack)
+
+```
+
+3.ACheartdis
+```{r}
+count_fips = dat_col_02 %>%
+  select(fips,CVDCRHD2) %>%
+  filter(!is.na(CVDCRHD2) & CVDCRHD2 !=7 & CVDCRHD2 != 9) %>%
+  group_by(fips) %>%
+  dplyr::summarise(countF = n())
+  
+count_a = dat_col_02 %>%
+  group_by(fips,CVDCRHD2) %>%
+  dplyr::summarise(n = n())
+
+
+tab_ac = count_a %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(ACheartdis = n/countF) %>%
+  filter(!is.na(CVDCRHD2) & CVDCRHD2 == 1) %>%
+  select(fips,ACheartdis)
+```
+
+4. stroke
+```{r}
+count_fips = dat_col_02 %>%
+  select(fips,CVDSTRK2) %>%
+  filter(!is.na(CVDSTRK2) & CVDSTRK2 != 7 & CVDSTRK2 != 9) %>%
+  group_by(fips) %>%
+  dplyr::summarise(countF = n())
+  
+count_s = dat_col_02 %>%
+  group_by(fips,CVDSTRK2) %>%
+  dplyr::summarise(n = n())
+
+
+tab_st = count_s %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(stroke = n/countF) %>%
+  filter(!is.na(CVDSTRK2) & CVDSTRK2 == 1) %>%
+  select(fips,stroke)
+```
+
+5. asthma
+```{r}
+count_fips = dat_col_02 %>%
+  select(fips,ASTHMA2) %>%
+  filter(!is.na(ASTHMA2) & ASTHMA2 != 7 & ASTHMA2 != 9) %>%
+  group_by(fips) %>%
+  dplyr::summarise(countF = n())
+  
+count_as = dat_col_02 %>%
+  group_by(fips,ASTHMA2) %>%
+  dplyr::summarise(n = n())
+
+tab_as = count_as %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(asthma = n/countF) %>%
+  filter(!is.na(ASTHMA2) & ASTHMA2 == 1) %>%
+  select(fips,asthma)
+```
+
+6. age
+```{r}
+age = dat_col_02 %>%
+  select(fips,AGE) %>%
+  filter(AGE != 7, AGE != 9) %>%
+  group_by(fips) %>%
+  dplyr::summarise(age = mean(AGE))
+```
+
+7.sex
+```{r}
+count_fips = dat_col_02 %>%
+  select(fips,SEX) %>%
+  filter(!is.na(SEX)) %>%
+  group_by(fips) %>%
+  dplyr::summarise(countF = n())
+  
+count_sex = dat_col_02 %>%
+  group_by(fips,SEX) %>%
+  dplyr::summarise(n = n())
+
+tab_sex = count_sex %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(sex = n/countF) %>%
+  filter(!is.na(SEX) & SEX == 2) %>%
+  select(fips,sex)
+```
+
+8.race
+```{r}
+count_fips = dat_col_02 %>%
+  select(fips,ORACE2) %>%
+  filter(!is.na(ORACE2) & ORACE2 != 7 & ORACE2 != 8 & ORACE2 != 9) %>%
+  group_by(fips) %>%
+  dplyr::summarise(countF = n())
+  
+count_race = dat_col_02 %>%
+  group_by(fips,ORACE2) %>%
+  dplyr::summarise(n = n())
+
+white = count_race %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(white = n/countF) %>%
+  filter(!is.na(ORACE2) & ORACE2 == 1) %>%
+  select(fips,white)
+
+black = count_race %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(black = n/countF) %>%
+  filter(!is.na(ORACE2) & ORACE2 == 2) %>%
+  select(fips,black)
+
+asian = count_race %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(asian = n/countF) %>%
+  filter(!is.na(ORACE2) & ORACE2 == 3) %>%
+  select(fips,asian)
+
+other_race = count_race %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(race1 = n/countF) %>%
+  filter(!is.na(ORACE2) & ORACE2 %in% c(4,5,6)) %>%
+  group_by(fips) %>%
+  dplyr::summarise(race_other = sum(race1)) %>%
+  select(fips,race_other)
+```
+
+9. educ
+```{r}
+count_fips = dat_col_02 %>%
+  select(fips,EDUCA) %>%
+  filter(!is.na(EDUCA) & EDUCA != 9) %>%
+  group_by(fips) %>%
+  dplyr::summarise(countF = n())
+  
+count_edu = dat_col_02 %>%
+  group_by(fips,EDUCA) %>%
+  dplyr::summarise(n = n())
+
+tab_educ1 = count_edu %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(educ = n/countF) %>%
+  filter(!is.na(EDUCA) & EDUCA %in% c(1,2)) %>%
+  group_by(fips) %>%
+  dplyr::summarise(educ1 = sum(educ)) %>%
+  select(fips,educ1)
+
+tab_educ2 = count_edu %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(educ = n/countF) %>%
+  filter(!is.na(EDUCA) & EDUCA %in% c(3,4)) %>%
+  group_by(fips) %>%
+  dplyr::summarise(educ2 = sum(educ)) %>%
+  select(fips,educ2)
+
+tab_educ3 = count_edu %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(educ = n/countF) %>%
+  filter(!is.na(EDUCA) & EDUCA %in% c(5,6)) %>%
+  group_by(fips) %>%
+  dplyr::summarise(educ3 = sum(educ)) %>%
+  select(fips,educ3)
+```
+
+10.income
+```{r}
+count_fips = dat_col_02 %>%
+  select(fips,INCOME2) %>%
+  filter(!is.na(INCOME2) & INCOME2 != 77 & INCOME2 != 99) %>%
+  group_by(fips) %>%
+  dplyr::summarise(countF = n())
+  
+count_inc = dat_col_02 %>%
+  group_by(fips,INCOME2) %>%
+  dplyr::summarise(n = n())
+
+tab_inc1 = count_inc %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(income1 = n/countF) %>%
+  filter(!is.na(INCOME2) & INCOME2 == 01) %>%
+  select(fips,income1)
+
+tab_inc2 = count_inc %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(income2 = n/countF) %>%
+  filter(!is.na(INCOME2) & INCOME2 == 02) %>%
+  select(fips,income2)
+
+tab_inc3 = count_inc %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(income3 = n/countF) %>%
+  filter(!is.na(INCOME2) & INCOME2 == 03) %>%
+  select(fips,income3)
+
+tab_inc4 = count_inc %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(income4 = n/countF) %>%
+  filter(!is.na(INCOME2) & INCOME2 == 04) %>%
+  select(fips,income4)
+
+tab_inc5 = count_inc %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(income5 = n/countF) %>%
+  filter(!is.na(INCOME2) & INCOME2 == 05) %>%
+  select(fips,income5)
+
+tab_inc6 = count_inc %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(income6 = n/countF) %>%
+  filter(!is.na(INCOME2) & INCOME2 == 06) %>%
+  select(fips,income6)
+
+tab_inc7 = count_inc %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(income7 = n/countF) %>%
+  filter(!is.na(INCOME2) & INCOME2 == 07) %>%
+  select(fips,income7)
+
+tab_inc8 = count_inc %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(income8 = n/countF) %>%
+  filter(!is.na(INCOME2) & INCOME2 == 08) %>%
+  select(fips,income8)
+```
+
+11.marital
+```{r}
+count_fips = dat_col_02 %>%
+  select(fips,MARITAL) %>%
+  filter(!is.na(MARITAL) & MARITAL != 9) %>%
+  group_by(fips) %>%
+  dplyr::summarise(countF = n())
+  
+count_mar = dat_col_02 %>%
+  group_by(fips,MARITAL) %>%
+  dplyr::summarise(n = n())
+
+tab_married = count_mar %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(married = n/countF) %>%
+  filter(!is.na(MARITAL) & MARITAL == 1) %>%
+  select(fips,married)
+
+tab_unmar = count_mar %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(unmarried1 = n/countF) %>%
+  filter(!is.na(MARITAL) & MARITAL %in% c(2,3,4,5,6)) %>%
+  group_by(fips) %>%
+  dplyr::summarise(unmarried = sum(unmarried1)) %>%
+  select(fips,unmarried)
+```
+
+12.employ
+```{r}
+count_fips = dat_col_02 %>%
+  select(fips,EMPLOY) %>%
+  filter(!is.na(EMPLOY) & EMPLOY != 9) %>%
+  group_by(fips) %>%
+  dplyr::summarise(countF = n())
+  
+count_emp = dat_col_02 %>%
+  group_by(fips,EMPLOY) %>%
+  dplyr::summarise(n = n())
+
+tab_employed = count_emp %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(employed1 = n/countF) %>%
+  filter(!is.na(EMPLOY) & EMPLOY %in% c(1,2)) %>%
+  group_by(fips) %>%
+  dplyr::summarise(employed = sum(employed1)) %>%
+  select(fips,employed)
+  
+tab_out = count_emp %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(employed1 = n/countF) %>%
+  filter(!is.na(EMPLOY) & EMPLOY %in% c(3,4)) %>%
+  group_by(fips) %>%
+  dplyr::summarise(out_of_work = sum(employed1)) %>%
+  select(fips,out_of_work)
+  
+tab_home = count_emp %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(employed1 = n/countF) %>%
+  filter(!is.na(EMPLOY) & EMPLOY %in% c(5)) %>%
+  group_by(fips) %>%
+  dplyr::summarise(homemaker = sum(employed1)) %>%
+  select(fips,homemaker)
+  
+tab_stu = count_emp %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(employed1 = n/countF) %>%
+  filter(!is.na(EMPLOY) & EMPLOY %in% c(6)) %>%
+  group_by(fips) %>%
+  dplyr::summarise(student = sum(employed1)) %>%
+  select(fips,student)
+  
+tab_emp_other = count_emp %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(employed1 = n/countF) %>%
+  filter(!is.na(EMPLOY) & EMPLOY %in% c(7,8)) %>%
+  group_by(fips) %>%
+  dplyr::summarise(employ_other = sum(employed1)) %>%
+  select(fips,employ_other)
+```
+
+13. hlthplan
+```{r}
+count_fips = dat_col_02 %>%
+  select(fips,HLTHPLAN) %>%
+  filter(!is.na(HLTHPLAN) & HLTHPLAN != 7 & HLTHPLAN != 9) %>%
+  group_by(fips) %>%
+  dplyr::summarise(countF = n())
+  
+count_plan = dat_col_02 %>%
+  group_by(fips,HLTHPLAN) %>%
+  dplyr::summarise(n = n())
+
+tab_plan = count_plan %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(hlthplan = n/countF) %>%
+  filter(!is.na(HLTHPLAN) & HLTHPLAN == 1) %>%
+  select(fips,hlthplan)
+```
+
+14.exercise
+```{r}
+count_fips = dat_col_02 %>%
+  select(fips,EXERANY2) %>%
+  filter(!is.na(EXERANY2) & EXERANY2 != 7 & EXERANY2 != 9) %>%
+  group_by(fips) %>%
+  dplyr::summarise(countF = n())
+  
+count_ex = dat_col_02 %>%
+  group_by(fips,EXERANY2) %>%
+  dplyr::summarise(n = n())
+
+tab_ex = count_ex %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(exercise = n/countF) %>%
+  filter(!is.na(EXERANY2) & EXERANY2 == 1) %>%
+  select(fips,exercise)
+```
+
+15.smoke
+```{r}
+count_fips = dat_col_02 %>%
+  select(fips,X.RFSMOK2) %>%
+  filter(!is.na(X.RFSMOK2) & X.RFSMOK2 != 9) %>%
+  group_by(fips) %>%
+  dplyr::summarise(countF = n())
+  
+count_sm = dat_col_02 %>%
+  group_by(fips,X.RFSMOK2) %>%
+  dplyr::summarise(n = n())
+
+tab_sm = count_sm %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(smoke = n/countF) %>%
+  filter(!is.na(X.RFSMOK2) & X.RFSMOK2 == 2) %>%
+  select(fips,smoke)
+```
+
+16.drink
+```{r}
+count_fips = dat_col_02 %>%
+  select(fips,DRNKANY3) %>%
+  filter(!is.na(DRNKANY3) & DRNKANY3 != 7 & DRNKANY3 != 9) %>%
+  group_by(fips) %>%
+  dplyr::summarise(countF = n())
+  
+count_drk = dat_col_02 %>%
+  group_by(fips,DRNKANY3) %>%
+  dplyr::summarise(n = n())
+
+tab_drk = count_drk %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(drink = n/countF) %>%
+  filter(!is.na(DRNKANY3) & DRNKANY3 == 1) %>%
+  select(fips,drink)
+```
+
+17.bmi_cat
+```{r}
+count_fips = dat_col_02 %>%
+  select(fips,X.BMI2CAT) %>%
+  filter(!is.na(X.BMI2CAT) & X.BMI2CAT != 9) %>%
+  group_by(fips) %>%
+  dplyr::summarise(countF = n())
+  
+count_bmicat = dat_col_02 %>%
+  group_by(fips,X.BMI2CAT) %>%
+  dplyr::summarise(n = n())
+
+tab_bmicat1 = count_bmicat %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(bmi_cat1 = n/countF) %>%
+  filter(!is.na(X.BMI2CAT) & X.BMI2CAT == 1) %>%
+  select(fips,bmi_cat1)
+
+tab_bmicat2 = count_bmicat %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(bmi_cat2 = n/countF) %>%
+  filter(!is.na(X.BMI2CAT) & X.BMI2CAT == 2) %>%
+  select(fips,bmi_cat2)
+
+tab_bmicat3 = count_bmicat %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(bmi_cat3 = n/countF) %>%
+  filter(!is.na(X.BMI2CAT) & X.BMI2CAT == 3) %>%
+  select(fips,bmi_cat3)
+```
+
+18.bmi_cts
+```{r}
+tab_bmicts = dat_col_02 %>%
+  select(fips,X.BMI2) %>%
+  filter(X.BMI2 != 9999) %>%
+  group_by(fips) %>%
+  dplyr::summarise(bmi_cts = mean(X.BMI2))
+```
+
+
+19.genhlth
+```{r}
+count_fips = dat_col_02 %>%
+  select(fips,GENHLTH) %>%
+  filter(!is.na(GENHLTH) & GENHLTH != 7  & GENHLTH != 9) %>%
+  group_by(fips) %>%
+  dplyr::summarise(countF = n())
+  
+count_genh = dat_col_02 %>%
+  group_by(fips,GENHLTH) %>%
+  dplyr::summarise(n = n())
+
+tab_genh1 = count_genh %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(genhlth_ex = n/countF) %>%
+  filter(!is.na(GENHLTH) & GENHLTH == 1) %>%
+  select(fips,genhlth_ex)
+
+tab_genh2 = count_genh %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(genhlth_vg = n/countF) %>%
+  filter(!is.na(GENHLTH) & GENHLTH == 2) %>%
+  select(fips,genhlth_vg)
+
+tab_genh3 = count_genh %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(genhlth_go = n/countF) %>%
+  filter(!is.na(GENHLTH) & GENHLTH == 3) %>%
+  select(fips,genhlth_go)
+
+tab_genh4 = count_genh %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(genhlth_fa = n/countF) %>%
+  filter(!is.na(GENHLTH) & GENHLTH == 4) %>%
+  select(fips,genhlth_fa)
+
+tab_genh5 = count_genh %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(genhlth_po = n/countF) %>%
+  filter(!is.na(GENHLTH) & GENHLTH == 5) %>%
+  select(fips,genhlth_po)
+
+```
+
+20.qlactlm
+```{r}
+count_fips = dat_col_02 %>%
+  select(fips,QLACTLM2) %>%
+  filter(!is.na(QLACTLM2) & QLACTLM2 != 7 & QLACTLM2 != 9) %>%
+  group_by(fips) %>%
+  dplyr::summarise(countF = n())
+  
+count_ql = dat_col_02 %>%
+  group_by(fips,QLACTLM2) %>%
+  dplyr::summarise(n = n())
+
+tab_ql = count_ql %>% 
+  left_join(count_fips,by = c('fips' = 'fips')) %>%
+  mutate(qlactlm = n/countF) %>%
+  filter(!is.na(QLACTLM2) & QLACTLM2 == 1) %>%
+  select(fips,qlactlm)
+```
+
+left join all:
+```{r,eval=FALSE}
+tab_first = dat_col_02 %>%
+  mutate(year = 2002) %>%
+  mutate(metro = NA) %>%
+  select(fips,state = X.STATE,county = CTYCODE, metro,year)
+
+tab_first = unique(tab_first)
+```
+
+```{r,eval=FALSE}
+#var7
+final_00 = tab_first %>%
+  left_join(menthlth,by= c('fips' = 'fips'))
+
+#var8
+final_00 = final_00 %>%
+  left_join(tab_heart,by= c('fips' = 'fips'))
+
+#var9
+final_00 = final_00 %>%
+  left_join(tab_ac,by= c('fips' = 'fips'))
+
+#var10
+final_00 = final_00 %>%
+  left_join(tab_st,by= c('fips' = 'fips'))
+
+#var11
+final_00 = final_00 %>%
+  left_join(tab_as,by= c('fips' = 'fips'))
+
+#var12
+final_00 = final_00 %>%
+  left_join(age,by= c('fips' = 'fips'))
+
+#var13
+final_00 = final_00 %>%
+  left_join(tab_sex,by= c('fips' = 'fips'))
+
+#var14
+final_00 = final_00 %>%
+  left_join(white,by= c('fips' = 'fips'))
+
+#var15
+final_00 = final_00 %>%
+  left_join(black,by= c('fips' = 'fips'))
+
+#var16
+final_00 = final_00 %>%
+  left_join(asian,by= c('fips' = 'fips'))
+
+#var17
+final_00 = final_00 %>%
+  left_join(other_race,by= c('fips' = 'fips'))
+
+#var18 ~20
+final_00 = final_00 %>%
+  left_join(tab_educ1,by= c('fips' = 'fips'))
+final_00 = final_00 %>%
+  left_join(tab_educ2,by= c('fips' = 'fips'))
+final_00 = final_00 %>%
+  left_join(tab_educ3,by= c('fips' = 'fips'))
+
+#var20~27
+final_00 = final_00 %>%
+  left_join(tab_inc1,by= c('fips' = 'fips'))
+final_00 = final_00 %>%
+  left_join(tab_inc2,by= c('fips' = 'fips'))
+final_00 = final_00 %>%
+  left_join(tab_inc3,by= c('fips' = 'fips'))
+final_00 = final_00 %>%
+  left_join(tab_inc4,by= c('fips' = 'fips'))
+final_00 = final_00 %>%
+  left_join(tab_inc5,by= c('fips' = 'fips'))
+final_00 = final_00 %>%
+  left_join(tab_inc6,by= c('fips' = 'fips'))
+final_00 = final_00 %>%
+  left_join(tab_inc7,by= c('fips' = 'fips'))
+final_00 = final_00 %>%
+  left_join(tab_inc8,by= c('fips' = 'fips'))
+
+#var28 & 29
+final_00 = final_00 %>%
+  left_join(tab_married,by= c('fips' = 'fips'))
+final_00 = final_00 %>%
+  left_join(tab_unmar,by= c('fips' = 'fips'))
+
+#var 30~34
+final_00 = final_00 %>%
+  left_join(tab_employed,by= c('fips' = 'fips'))
+final_00 = final_00 %>%
+  left_join(tab_out,by= c('fips' = 'fips'))
+final_00 = final_00 %>%
+  left_join(tab_home,by= c('fips' = 'fips'))
+final_00 = final_00 %>%
+  left_join(tab_stu,by= c('fips' = 'fips'))
+final_00 = final_00 %>%
+  left_join(tab_emp_other,by= c('fips' = 'fips'))
+
+#var35
+final_00 = final_00 %>%
+  left_join(tab_plan,by= c('fips' = 'fips'))
+
+#var36
+final_00 = final_00 %>%
+  left_join(tab_ex,by= c('fips' = 'fips'))
+
+#var 37
+final_00 = final_00 %>%
+  left_join(tab_sm,by= c('fips' = 'fips'))
+
+#var38
+final_00 = final_00 %>%
+  left_join(tab_drk,by= c('fips' = 'fips'))
+
+#var 39~41
+final_00 = final_00 %>%
+  left_join(tab_bmicat1,by= c('fips' = 'fips'))
+final_00 = final_00 %>%
+  left_join(tab_bmicat2,by= c('fips' = 'fips'))
+final_00 = final_00 %>%
+  left_join(tab_bmicat3,by= c('fips' = 'fips'))
+
+#var 42
+final_00 = final_00 %>%
+  left_join(tab_bmicts,by= c('fips' = 'fips'))
+
+#var43 ~ 47
+final_00 = final_00 %>%
+  left_join(tab_genh1,by= c('fips' = 'fips'))
+final_00 = final_00 %>%
+  left_join(tab_genh2,by= c('fips' = 'fips'))
+final_00 = final_00 %>%
+  left_join(tab_genh3,by= c('fips' = 'fips'))
+final_00 = final_00 %>%
+  left_join(tab_genh4,by= c('fips' = 'fips'))
+final_00 = final_00 %>%
+  left_join(tab_genh5,by= c('fips' = 'fips'))
+
+#var48
+final_00 = final_00 %>%
+  left_join(tab_ql,by= c('fips' = 'fips'))
+```
+
+save as csv:
+```{r,eval=FALSE}
+write.csv(final_00,file = "2002_data.csv",row.names = F)
+```
+
+more steps are needed to finalize the model since I didn't consider the presense of "777" and "999" in the CTYCODE
+```{r,eval=FALSE}
+data_2002 = read_csv("2002_data.csv")
+data_2002 = data_2002 %>%
+  filter(county != 777 & county != 999) %>%
+  mutate(bmi_cts = bmi_cts/100) %>%
+  select(-metro)
+
+data_2002 = unique(data_2002)
+write_csv(data_2002,"data_2002.csv")
+```
