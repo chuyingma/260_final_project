@@ -2,13 +2,12 @@ dataset in 2008, 2009, 2010, 2011, 2012
 ```{r}
 library("SASxport")
 library(dplyr)
-data_10<-read.xport("10data.XPT")
-head(data_10)
-data <- data_10 %>% mutate(fips=X.STATE * 1000 + CTYCODE) %>%
+data_09 <-read.xport("09data.XPT")
+data <- data_09 %>% mutate(fips=X.STATE * 1000 + CTYCODE) %>%
   filter(!is.na(fips)) %>%
-  select(fips, X.STATE, CTYCODE, IYEAR,MENTHLTH, CVDINFR4, CVDCRHD4,CVDSTRK3, ASTHMA2, AGE, SEX, ORACE2, EDUCA, INCOME2, MARITAL, EMPLOY, HLTHPLAN, EXERANY2, X.RFSMOK3,DRNKANY4, X.BMI4CAT, X.BMI4, GENHLTH, QLACTLM2)
+  select(fips, X.STATE, CTYCODE,IYEAR,MENTHLTH, CVDINFR4, CVDCRHD4,CVDSTRK3, ASTHMA2, AGE, SEX, ORACE2, EDUCA, INCOME2, MARITAL, EMPLOY, HLTHPLAN, EXERANY2, X.RFSMOK3,DRNKANY4, X.BMI4CAT, X.BMI4, GENHLTH, QLACTLM2)
 
-data1 <- data_10 %>% mutate(state=X.STATE) %>%
+data1 <- data_09 %>% mutate(state=X.STATE) %>%
   filter(!is.na(state)) %>%
   select(state, IYEAR,MENTHLTH, CVDINFR4, CVDCRHD4,CVDSTRK3, ASTHMA2, AGE, SEX, ORACE2, EDUCA, INCOME2, MARITAL, EMPLOY, HLTHPLAN, EXERANY2, X.RFSMOK3,DRNKANY4, X.BMI4CAT, X.BMI4, GENHLTH, QLACTLM2)
 ```
@@ -27,7 +26,7 @@ data$EDUCA[data$EDUCA == 9] <- c(NA)
 data$INCOME2[data$INCOME2 %in% c(77,99)] <- c(NA) 
 data$MARITAL[data$MARITAL == 9] <- c(NA) 
 data$EMPLOY[data$EMPLOY == 9] <- c(NA) 
-data$HLTHPLAN[data$HLTHPLAN == 9] <- c(NA) 
+data$HLTHPLAN[data$HLTHPLAN %in% c(7,9)] <- c(NA) 
 data$EXERANY2[data$EXERANY2 %in% c(7,9)] <- c(NA) 
 data$X.RFSMOK3[data$X.RFSMOK3 == 9] <- c(NA) 
 data$DRNKANY4[data$DRNKANY4 %in% c(7,9)] <- c(NA) 
@@ -35,7 +34,7 @@ data$X.BMI4CAT[data$X.BMI4CAT == 9] <- c(NA)
 data$X.BMI4[data$X.BMI4 == 9999] <- c(NA) 
 data$GENHLTH[data$GENHLTH %in% c(7,9)] <- c(NA) 
 data$QLACTLM2[data$QLACTLM2 %in% c(7,9)] <- c(NA) 
-write.csv(data, file = "2010_data_raw.csv", row.names = FALSE)
+write.csv(data, file = "2009_data_raw.csv", row.names = FALSE)
 ```
 
 ```{r}
@@ -50,14 +49,14 @@ data1$EDUCA[data1$EDUCA == 9] <- c(NA)
 data1$INCOME2[data1$INCOME2 %in% c(77,99)] <- c(NA) 
 data1$MARITAL[data1$MARITAL == 9] <- c(NA) 
 data1$EMPLOY[data1$EMPLOY == 9] <- c(NA) 
-data1$HLTHPLAN[data1$HLTHPLAN == 9] <- c(NA) 
+data1$HLTHPLAN[data1$HLTHPLAN %in% c(7,9)] <- c(NA) 
 data1$EXERANY2[data1$EXERANY2 %in% c(7,9)] <- c(NA) 
 data1$X.RFSMOK3[data1$X.RFSMOK3 == 9] <- c(NA) 
 data1$DRNKANY4[data1$DRNKANY4 %in% c(7,9)] <- c(NA) 
 data1$X.BMI4CAT[data1$X.BMI4CAT == 9] <- c(NA) 
 data1$X.BMI4[data1$X.BMI4 == 9999] <- c(NA) 
 data1$GENHLTH[data1$GENHLTH %in% c(7,9)] <- c(NA) 
-data1$QLACTLM2[data1$QLACTLM2 %in% c(7,9)] <- c(NA)
+data1$QLACTLM2[data1$QLACTLM2 %in% c(7,9)] <- c(NA) 
 ```
 
 
@@ -65,10 +64,10 @@ data1$QLACTLM2[data1$QLACTLM2 %in% c(7,9)] <- c(NA)
 
 SELECT
 ```{r}
-data10 <-data %>% group_by(fips) %>%
+data09 <-data %>% group_by(fips) %>%
          summarise(state = mean(X.STATE, na.rm = TRUE),
          county = mean(CTYCODE, na.rm = TRUE),
-         year = 2010,
+         year = 2009,
          menthlth = mean(MENTHLTH, na.rm= TRUE),
          heartattack = mean(CVDINFR4 == 1, na.rm = TRUE),
          ACheartdis = mean(CVDCRHD4 == 1, na.rm = TRUE),
@@ -112,13 +111,13 @@ data10 <-data %>% group_by(fips) %>%
          genhlth_fa = mean(GENHLTH == 4, na.rm = TRUE),
          genhlth_po = mean(GENHLTH == 5, na.rm = TRUE),
          qlactlm = mean(QLACTLM2 == 1, na.rm = TRUE))
-write.csv(data10, file = "2010_data.csv", row.names = FALSE)
+write.csv(data09, file = "2009_data.csv", row.names = FALSE)
 ```
 
 state level
 ```{r}
-data101 <-data1 %>% group_by(state) %>%
-         summarise(year = 2010,
+data091 <-data1 %>% group_by(state) %>%
+         summarise(year = 2009,
          menthlth = mean(MENTHLTH, na.rm= TRUE),
          heartattack = mean(CVDINFR4 == 1, na.rm = TRUE),
          ACheartdis = mean(CVDCRHD4 == 1, na.rm = TRUE),
@@ -162,5 +161,5 @@ data101 <-data1 %>% group_by(state) %>%
          genhlth_fa = mean(GENHLTH == 4, na.rm = TRUE),
          genhlth_po = mean(GENHLTH == 5, na.rm = TRUE),
          qlactlm = mean(QLACTLM2 == 1, na.rm = TRUE))
-write.csv(data101, file = "2010_data_state.csv", row.names = FALSE)
+write.csv(data091, file = "2009_data_state.csv", row.names = FALSE)
 ```

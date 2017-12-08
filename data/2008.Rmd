@@ -1,14 +1,4 @@
----
-title: "2008data"
-author: "Jingjing_Tang"
-date: "12/8/2017"
-output: html_document
----
-BST 260 Final Project
-Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
-
-This Rmd file is for data cleaning and aggregating BRFSS data into county level and state level for the year 2008
-
+dataset in 2008, 2009, 2010, 2011, 2012
 ```{r}
 library("SASxport")
 library(dplyr)
@@ -45,7 +35,7 @@ data$X.BMI4CAT[data$X.BMI4CAT == 9] <- c(NA)
 data$X.BMI4[data$X.BMI4 == 9999] <- c(NA) 
 data$GENHLTH[data$GENHLTH %in% c(7,9)] <- c(NA) 
 data$QLACTLM2[data$QLACTLM2 %in% c(7,9)] <- c(NA) 
-#write.csv(data, file = "2008_data_raw.csv", row.names = FALSE)
+write.csv(data, file = "2008_data_raw.csv", row.names = FALSE)
 ```
 
 
@@ -122,7 +112,7 @@ data08 <-data %>% group_by(fips) %>%
          genhlth_fa = mean(GENHLTH == 4, na.rm = TRUE),
          genhlth_po = mean(GENHLTH == 5, na.rm = TRUE),
          qlactlm = mean(QLACTLM2 == 1, na.rm = TRUE))
-#write.csv(data08, file = "2008_data.csv", row.names = FALSE)
+write.csv(data08, file = "2008_data.csv", row.names = FALSE)
 ```
 
 state level
@@ -172,5 +162,5 @@ data081 <-data1 %>% group_by(state) %>%
          genhlth_fa = mean(GENHLTH == 4, na.rm = TRUE),
          genhlth_po = mean(GENHLTH == 5, na.rm = TRUE),
          qlactlm = mean(QLACTLM2 == 1, na.rm = TRUE))
-#write.csv(data081, file = "2008_data_state.csv", row.names = FALSE)
+write.csv(data081, file = "2008_data_state.csv", row.names = FALSE)
 ```
