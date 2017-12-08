@@ -1,0 +1,350 @@
+---
+title: "Mental_part2"
+author: "Chuying Ma"
+date: "11/28/2017"
+output: html_document
+---
+
+BST 260 Final Project
+Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
+
+This Rmd file is for conducting linear regression for menthlth and other covariates.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)
+library(dplyr)
+library(tidyverse)
+```
+
+look for regression with pm 2.5, using backward selection and choose p = 0.05 as criteria:
+```{r}
+data_all = read_csv("data_3_expo.csv")
+reg_data = data_all %>%
+  dplyr::select(-c(fips,state,state,year))
+```
+
+```{r}
+pm_fit1 = lm(menthlth ~ .,data = reg_data)
+summary(pm_fit1)
+```
+
+delete age:
+```{r}
+pm_fit2 = lm(menthlth ~ sex + white + black + asian + educ1 + educ2 + income1 + income2 + income3 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + bmi_cts + genhlth_ex + genhlth_vg + genhlth_go + genhlth_fa + genhlth_po + qlactlm + pm2.5,data = reg_data)
+summary(pm_fit2)
+```
+delete white:
+```{r}
+pm_fit3 = lm(lm(menthlth ~ sex + black + asian + educ1 + educ2 + income1 + income2 + income3 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + bmi_cts + genhlth_ex + genhlth_vg + genhlth_go + genhlth_fa + genhlth_po + qlactlm + pm2.5,data = reg_data))
+summary(pm_fit3)
+```
+delete income2:
+```{r}
+pm_fit4 = lm(lm(menthlth ~ sex + black + asian + educ1 + educ2 + income1 + income3 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + bmi_cts + genhlth_ex + genhlth_vg + genhlth_go + genhlth_fa + genhlth_po + qlactlm + pm2.5,data = reg_data))
+summary(pm_fit4)
+```
+
+delete income3:
+```{r}
+pm_fit5 = lm(lm(menthlth ~ sex + black + asian + educ1 + educ2 + income1 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + bmi_cts + genhlth_ex + genhlth_vg + genhlth_go + genhlth_fa + genhlth_po + qlactlm + pm2.5,data = reg_data))
+summary(pm_fit5)
+```
+
+delete genhlth_vg:
+```{r}
+pm_fit6 = lm(lm(menthlth ~ sex + black + asian + educ1 + educ2 + income1 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + bmi_cts + genhlth_ex  + genhlth_go + genhlth_fa + genhlth_po + qlactlm + pm2.5,data = reg_data))
+summary(pm_fit6)
+```
+
+delete genhlth_go:
+```{r}
+pm_fit7 = lm(lm(menthlth ~ sex + black + asian + educ1 + educ2 + income1 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + bmi_cts + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + pm2.5,data = reg_data))
+summary(pm_fit7)
+```
+
+delete educ1:
+```{r}
+pm_fit8 = lm(lm(menthlth ~ sex + black + asian + educ2 + income1 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + bmi_cts + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + pm2.5,data = reg_data))
+summary(pm_fit8)
+```
+
+delete bmi_cts:
+```{r}
+pm_fit9 = lm(lm(menthlth ~ sex + black + asian + educ2 + income1 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + pm2.5,data = reg_data))
+summary(pm_fit9)
+```
+
+delete income5:
+```{r}
+pm_fit10 = lm(lm(menthlth ~ sex + black + asian + educ2 + income1 + income4 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + pm2.5,data = reg_data))
+summary(pm_fit10)
+```
+
+delete income7:
+```{r}
+pm_fit11 = lm(lm(menthlth ~ sex + black + asian + educ2 + income1 + income4 + income6 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + pm2.5,data = reg_data))
+summary(pm_fit11)
+```
+
+delete asian:
+```{r}
+pm_fit12 = lm(lm(menthlth ~ sex + black + educ2 + income1 + income4 + income6 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + pm2.5,data = reg_data))
+summary(pm_fit12)
+```
+
+delete bmi_cat1:
+```{r}
+pm_fit13 = lm(lm(menthlth ~ sex + black + educ2 + income1 + income4 + income6 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat2 + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + pm2.5,data = reg_data))
+summary(pm_fit13)
+```
+
+delete bmi_cat2:
+```{r}
+pm_fit14 = lm(lm(menthlth ~ sex + black + educ2 + income1 + income4 + income6 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + pm2.5,data = reg_data))
+summary(pm_fit14)
+```
+
+delete income6:
+```{r}
+pm_fit15 = lm(lm(menthlth ~ sex + black + educ2 + income1 + income4 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + pm2.5,data = reg_data))
+summary(pm_fit15)
+```
+
+delete exercise:
+```{r}
+pm_fit16 = lm(lm(menthlth ~ sex + black + educ2 + income1 + income4 + married + employed + out_of_work + homemaker + student + hlthplan + smoke + drink + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + pm2.5,data = reg_data))
+summary(pm_fit16)
+```
+
+delete sex:
+```{r}
+pm_fit17 = lm(lm(menthlth ~ black + educ2 + income1 + income4 + married + employed + out_of_work + homemaker + student + hlthplan + smoke + drink + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + pm2.5,data = reg_data))
+summary(pm_fit17)
+```
+
+look for regression with ozone, using backward selection and p = 0.05 as criteria:
+```{r}
+reg_data = data_all %>%
+  select(-c(fips,state,county,year,heartattack,ACheartdis,stroke,asthma,pm2.5,greenness))
+```
+
+```{r}
+oz_fit1 = lm(menthlth ~ .,data = reg_data)
+summary(oz_fit1)
+```
+
+delete white:
+```{r}
+oz_fit2 = lm(menthlth ~ age + sex + black + asian + educ1 + educ2 + income1 + income2 + income3 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + bmi_cts + genhlth_ex + genhlth_vg + genhlth_go + genhlth_fa + genhlth_po + qlactlm + ozone,data = reg_data)
+summary(oz_fit2)
+```
+
+delete age:
+```{r}
+oz_fit3 = lm(menthlth ~ sex + black + asian + educ1 + educ2 + income1 + income2 + income3 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + bmi_cts + genhlth_ex + genhlth_vg + genhlth_go + genhlth_fa + genhlth_po + qlactlm + ozone,data = reg_data)
+summary(oz_fit3)
+```
+
+delete genhlth_vg:
+```{r}
+oz_fit4 = lm(menthlth ~ sex + black + asian + educ1 + educ2 + income1 + income2 + income3 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + bmi_cts + genhlth_ex + genhlth_go + genhlth_fa + genhlth_po + qlactlm + ozone,data = reg_data)
+summary(oz_fit4)
+```
+
+delete genhlth_go:
+```{r}
+oz_fit5 = lm(menthlth ~ sex + black + asian + educ1 + educ2 + income1 + income2 + income3 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + bmi_cts + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + ozone,data = reg_data)
+summary(oz_fit5)
+```
+
+delete income2:
+```{r}
+oz_fit6 = lm(menthlth ~ sex + black + asian + educ1 + educ2 + income1 + income3 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + bmi_cts + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + ozone,data = reg_data)
+summary(oz_fit6)
+```
+
+delete income3:
+```{r}
+oz_fit7 = lm(menthlth ~ sex + black + asian + educ1 + educ2 + income1 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + bmi_cts + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + ozone,data = reg_data)
+summary(oz_fit7)
+```
+
+delete bmi_cts:
+```{r}
+oz_fit8 = lm(menthlth ~ sex + black + asian + educ1 + educ2 + income1 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + ozone,data = reg_data)
+summary(oz_fit8)
+```
+
+delete educ1:
+```{r}
+oz_fit9 = lm(menthlth ~ sex + black + asian + educ2 + income1 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + ozone,data = reg_data)
+summary(oz_fit9)
+```
+
+delete income5:
+```{r}
+oz_fit10 = lm(menthlth ~ sex + black + asian + educ2 + income1 + income4 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + ozone,data = reg_data)
+summary(oz_fit10)
+```
+
+
+delete asian:
+```{r}
+oz_fit11 = lm(menthlth ~ sex + black + educ2 + income1 + income4 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + ozone,data = reg_data)
+summary(oz_fit11)
+```
+
+
+delete bmi_cat1:
+```{r}
+oz_fit12 = lm(menthlth ~ sex + black + educ2 + income1 + income4 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat2 + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + ozone,data = reg_data)
+summary(oz_fit12)
+```
+
+delete bmi_cat2:
+```{r}
+oz_fit13 = lm(menthlth ~ sex + black + educ2 + income1 + income4 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + ozone,data = reg_data)
+summary(oz_fit13)
+```
+
+delete income7:
+```{r}
+oz_fit14 = lm(menthlth ~ sex + black + educ2 + income1 + income4 + income6 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + ozone,data = reg_data)
+summary(oz_fit14)
+```
+
+delete sex:
+```{r}
+oz_fit15 = lm(menthlth ~ black + educ2 + income1 + income4 + income6 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + ozone,data = reg_data)
+summary(oz_fit15)
+```
+
+delete income6:
+```{r}
+oz_fit16 = lm(menthlth ~ black + educ2 + income1 + income4 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + ozone,data = reg_data)
+summary(oz_fit16)
+```
+
+delete exercise:
+```{r}
+oz_fit17 = lm(menthlth ~ black + educ2 + income1 + income4 + married + employed + out_of_work + homemaker + student + hlthplan + smoke + drink + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + ozone,data = reg_data)
+summary(oz_fit17)
+```
+
+look for regression with greenness, using backward selection and p = 0.05 as criteria:
+```{r}
+reg_data = data_all %>%
+  select(-c(fips,state,county,year,heartattack,ACheartdis,stroke,asthma,pm2.5,ozone))
+```
+
+```{r}
+gr_fit1 = lm(menthlth ~ .,data = reg_data)
+summary(gr_fit1)
+```
+
+delete income2:
+```{r}
+gr_fit2 = lm(menthlth ~ age + sex + white + black + asian + educ1 + educ2 + income1 + income3 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + bmi_cts + genhlth_ex + genhlth_vg + genhlth_go + genhlth_fa + genhlth_po + qlactlm + greenness,data = reg_data)
+summary(gr_fit2)
+```
+
+delete white:
+```{r}
+gr_fit3 = lm(menthlth ~ age + sex  + black + asian + educ1 + educ2 + income1 + income3 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + bmi_cts + genhlth_ex + genhlth_vg + genhlth_go + genhlth_fa + genhlth_po + qlactlm + greenness,data = reg_data)
+summary(gr_fit3)
+```
+
+delete age:
+```{r}
+gr_fit4 = lm(menthlth ~ sex  + black + asian + educ1 + educ2 + income1 + income3 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + bmi_cts + genhlth_ex + genhlth_vg + genhlth_go + genhlth_fa + genhlth_po + qlactlm + greenness,data = reg_data)
+summary(gr_fit4)
+```
+
+delete income3:
+```{r}
+gr_fit5 = lm(menthlth ~ sex  + black + asian + educ1 + educ2 + income1 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + bmi_cts + genhlth_ex + genhlth_vg + genhlth_go + genhlth_fa + genhlth_po + qlactlm + greenness,data = reg_data)
+summary(gr_fit5)
+```
+
+delete genhlth_vg:
+```{r}
+gr_fit6 = lm(menthlth ~ sex  + black + asian + educ1 + educ2 + income1 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + bmi_cts + genhlth_ex + genhlth_go + genhlth_fa + genhlth_po + qlactlm + greenness,data = reg_data)
+summary(gr_fit6)
+```
+
+delete educ1:
+```{r}
+gr_fit7 = lm(menthlth ~ sex  + black + asian + educ2 + income1 + income4 + income5 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + bmi_cts + genhlth_ex + genhlth_go + genhlth_fa + genhlth_po + qlactlm + greenness,data = reg_data)
+summary(gr_fit7)
+```
+
+delete income5 :
+```{r}
+gr_fit8 = lm(menthlth ~ sex  + black + asian + educ2 + income1 + income4 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + bmi_cts + genhlth_ex + genhlth_go + genhlth_fa + genhlth_po + qlactlm + greenness,data = reg_data)
+summary(gr_fit8)
+```
+
+delete bmi_cts:
+```{r}
+gr_fit9 = lm(menthlth ~ sex  + black + asian + educ2 + income1 + income4 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat1 + bmi_cat2 + genhlth_ex + genhlth_go + genhlth_fa + genhlth_po + qlactlm + greenness,data = reg_data)
+summary(gr_fit9)
+```
+
+delete bmi_cat1:
+```{r}
+gr_fit10 = lm(menthlth ~ sex  + black + asian + educ2 + income1 + income4 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + bmi_cat2 + genhlth_ex + genhlth_go + genhlth_fa + genhlth_po + qlactlm + greenness,data = reg_data)
+summary(gr_fit10)
+```
+
+delete bmi_cat2:
+```{r}
+gr_fit11 = lm(menthlth ~ sex  + black + asian + educ2 + income1 + income4 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + genhlth_ex + genhlth_go + genhlth_fa + genhlth_po + qlactlm + greenness,data = reg_data)
+summary(gr_fit11)
+```
+
+delete asian:
+```{r}
+gr_fit12 = lm(menthlth ~ sex  + black + educ2 + income1 + income4 + income6 + income7 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + genhlth_ex + genhlth_go + genhlth_fa + genhlth_po + qlactlm + greenness,data = reg_data)
+summary(gr_fit12)
+```
+
+delete income7:
+```{r}
+gr_fit13 = lm(menthlth ~ sex  + black + educ2 + income1 + income4 + income6 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + genhlth_ex + genhlth_go + genhlth_fa + genhlth_po + qlactlm + greenness,data = reg_data)
+summary(gr_fit13)
+```
+
+delete sex:
+```{r}
+gr_fit14 = lm(menthlth ~ black + educ2 + income1 + income4 + income6 + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + genhlth_ex + genhlth_go + genhlth_fa + genhlth_po + qlactlm + greenness,data = reg_data)
+summary(gr_fit14)
+```
+
+delete income6:
+```{r}
+gr_fit15 = lm(menthlth ~ black + educ2 + income1 + income4  + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + genhlth_ex + genhlth_go + genhlth_fa + genhlth_po + qlactlm + greenness,data = reg_data)
+summary(gr_fit15)
+```
+
+delete genhlth_go:
+```{r}
+gr_fit16 = lm(menthlth ~ black + educ2 + income1 + income4  + married + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + genhlth_ex  + genhlth_fa + genhlth_po + qlactlm + greenness,data = reg_data)
+summary(gr_fit16)
+```
+
+delete homemaker:
+```{r}
+gr_fit17 = lm(menthlth ~ black + educ2 + income1 + income4  + married + employed + out_of_work  + student + hlthplan + exercise + smoke + drink + genhlth_ex  + genhlth_fa + genhlth_po + qlactlm + greenness,data = reg_data)
+summary(gr_fit17)
+```
+
+delete student:
+```{r}
+gr_fit18 = lm(menthlth ~ black + educ2 + income1 + income4  + married + employed + out_of_work + hlthplan + exercise + smoke + drink + genhlth_ex  + genhlth_fa + genhlth_po + qlactlm + greenness,data = reg_data)
+summary(gr_fit18)
+```
+
