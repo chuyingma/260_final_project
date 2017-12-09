@@ -1,0 +1,81 @@
+---
+title: "regression"
+author: "Xuewei Zhang"
+data: "12/08/2017"
+output: html_document
+
+---
+
+##BST 260 Final Project
+#Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
+
+#This Rmd file is for plotting regression for asthma and other covariates of interests
+
+```{r}
+###read data with exposure: greenness, pm2.5, ozone
+library(dslabs)
+library(tidyverse)
+library(readr)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+
+year_expo3 = read.csv("data_3_expo.csv")
+names(year_expo3)
+year_expo4 = read.csv("data_exposure_00_10.csv")
+```
+
+relationship between mental heath and ozone
+```{r}
+year_expo3 %>%
+  dplyr::select(-c(fips,state,county)) %>%
+  ggplot(aes(menthlth,ozone)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~ year) +
+  ggtitle("mental health vs ozone")
+
+```
+
+relationship between asthma and smoke
+```{r}
+year_expo3 %>%
+  dplyr::select(-c(fips,state,county)) %>%
+  ggplot(aes(asthma,smoke)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~ year) +
+  ggtitle("heartattack vs ozone")
+
+```
+
+relationship between asthma and income1, which has a relatively positively relationship
+```{r}
+year_expo4 %>%
+  dplyr:: select(-c(fips,state,county)) %>%
+  ggplot(aes(asthma,income1)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~ year) +
+  scale_x_continuous(limits=c(0, 0.5)) +
+  scale_y_continuous(limits=c(0, 0.5))
+```
+
+
+relationship between mental health and ozone
+```{r}
+year_expo3 %>%
+  dplyr::   select(-c(fips,state,county)) %>%
+  ggplot(aes(menthlth,ozone)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~ year) +
+  ggtitle("mental health vs ozone")
+
+names(year_expo4)
+```
+
+
+
+
+
