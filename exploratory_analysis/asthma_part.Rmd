@@ -1,0 +1,40 @@
+---
+title: "asthma by county level"
+author: "Xuewei Zhang"
+data: "12/08/2017"
+output: html_document
+---
+
+BST 260 Final Project
+Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
+
+This Rmd file is for plotting asthma distribution by county level
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(RColorBrewer)
+asthma_data = read.csv("10_year_data.csv")
+
+ash <- asthma_data %>% 
+  dplyr::select(fips,asthma,year)
+cnty <- map_data("county")
+
+names(asthma_data)
+
+men_map <- cnty %>%
+  mutate(polyname = paste(region,subregion,sep=",")) %>%
+  left_join(county.fips, by="polyname")
+
+men_df <- inner_join(men_map, ash, by=c("fips" = "fips"))
+
+map_all_year = ggplot(men_df, aes(long, lat,group = group)) + 
+  geom_polygon(aes(fill = asthma)) + coord_quickmap() +
+  scale_x_continuous(expand=c(0,0)) +  
+  scale_fill_gradientn(colors = brewer.pal(8, "RdPu"), trans = "sqrt") +
+  facet_wrap(~year,ncol = 3) +
+  ggtitle("Distribution of Asthma in US counties from 2000 to 2010")
+map_all_year
+```
+
+
