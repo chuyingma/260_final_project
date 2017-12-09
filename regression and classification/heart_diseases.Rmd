@@ -1,0 +1,164 @@
+---
+title: "Regression"
+author: "Jingjing_Tang"
+date: "12/9/2017"
+output: html_document
+---
+```{r}
+library(dplyr)
+library(ggplot2)
+dat <- read.csv("data_3_expo.csv")
+dat051<- read.csv("state_05.csv") %>% select(-full, -X)
+dat061<- read.csv("state_06.csv") %>% select(-full, -X)
+dat071<- read.csv("state_07.csv") %>% select(-full, -X)
+dat081<- read.csv("2008_data_state.csv") 
+dat091<- read.csv("2009_data_state.csv") 
+dat101<- read.csv("2010_data_state.csv") 
+dat_state_05_10 <- rbind (dat051, dat061, dat071, dat081,dat091,dat101)
+```
+
+##age-stroke
+```{r}
+dat_state_05_10 %>% 
+  group_by(year,state) %>%
+  filter(!is.na(stroke) & !is.na(age)) %>%
+  ggplot(aes(age, stroke)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = 'lm') +
+  facet_wrap(~year)
+
+
+##age-heartattack
+
+dat_state_05_10 %>% 
+  group_by(year,state) %>%
+  filter(!is.na(heartattack) & !is.na(age)) %>%
+  ggplot(aes(age, heartattack)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = 'lm') +
+  facet_wrap(~year)
+
+##age-ACheartdis
+
+dat_state_05_10 %>% 
+  group_by(year,state) %>%
+  filter(!is.na(ACheartdis) & !is.na(age)) %>%
+  ggplot(aes(age, ACheartdis)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = 'lm') +
+  facet_wrap(~year)
+```
+
+##smoke-stroke
+```{r}
+dat_state_05_10 %>% 
+  group_by(year,state) %>%
+  filter(!is.na(stroke) & !is.na(smoke)) %>%
+  ggplot(aes(smoke, stroke)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = 'lm') +
+  facet_wrap(~year)
+```
+
+##smoke-heartattack
+```{r}
+dat_state_05_10 %>% 
+  group_by(year,state) %>%
+  filter(!is.na(heartattack) & !is.na(smoke)) %>%
+  ggplot(aes(smoke, heartattack)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = 'lm') +
+  facet_wrap(~year)
+```
+
+##smoke-ACheartdis
+```{r}
+dat_state_05_10 %>% 
+  group_by(year,state) %>%
+  filter(!is.na(ACheartdis) & !is.na(smoke)) %>%
+  ggplot(aes(smoke, ACheartdis)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = 'lm') +
+  facet_wrap(~year)
+```
+
+
+
+```{r}
+dat_state_05_10 %>% 
+  group_by(year,state) %>%
+  filter(!is.na(ACheartdis) & !is.na(smoke)) %>%
+  ggplot(aes(smoke, ACheartdis)) +
+  geom_bin2d(bindwidth = c(5, 0.5)) +
+  geom_smooth(method = 'lm') +
+  facet_wrap(~year)
+```
+
+
+
+##drink-stroke
+```{r}
+dat_state_05_10 %>% 
+  group_by(year,state) %>%
+  filter(!is.na(drink) & !is.na(stroke)) %>%
+  ggplot(aes(drink, stroke)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = 'lm') +
+  facet_wrap(~year)
+```
+ 
+ 
+
+##drink-heartattack
+```{r}
+dat_state_05_10 %>% 
+  group_by(year,state) %>%
+  filter(!is.na(heartattack) & !is.na(drink)) %>%
+  summarize(heartattack = mean(heartattack), drink = mean(drink)) %>%
+  ggplot(aes(drink, heartattack)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = 'lm') +
+  facet_wrap(~year)
+```
+
+##drink-ACheartdis
+```{r}
+dat_state_05_10 %>% 
+  group_by(year,state) %>%
+  filter(!is.na(ACheartdis) & !is.na(drink)) %>%
+  summarize(ACheartdis = mean(ACheartdis), drink = mean(drink)) %>%
+  ggplot(aes(drink, ACheartdis)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = 'lm') +
+  facet_wrap(~year)
+```
+
+
+prediction for menthlth
+```{r}
+fit_menthlth <- dat %>% 
+  lm(menthlth ~ income7 + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + genhlth_fa + genhlth_po + qlactlm + pm2.5 + ozone + greenness, data=.)
+summary(fit_menthlth)
+
+dat %>% filter(year %in% 2010) %>%
+  mutate(menthlth_hat = predict(fit_menthlth, newdata = .)) %>%
+  ggplot(aes(menthlth_hat, menthlth)) +
+  geom_point(aes(alpha = 0.05,col = "red")) +
+  geom_abline(col = "black")
+```
+
+
+
+prediction for heartattack
+```{r}
+library(tidyverse)
+fit_hearattack <- dat %>%
+  lm(heartattack ~ age + sex  + black +  educ1 + educ2  +  employed + hlthplan+ smoke+drink+genhlth_ex+genhlth_vg+genhlth_go+qlactlm+pm2.5, data =.)
+summary(fit_hearattack)
+
+dat %>% filter(year %in% 2010) %>%
+  mutate(heartattack_hat = predict(fit_hearattack, newdata = .)) %>%
+  ggplot(aes(heartattack_hat, heartattack)) +
+  geom_point(aes(alpha = 0.2, col = fips)) +
+  geom_abline()
+```
