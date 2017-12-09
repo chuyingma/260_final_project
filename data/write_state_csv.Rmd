@@ -1,0 +1,809 @@
+---
+title: "Write_state"
+author: "Chuying Ma"
+date: "11/26/2017"
+output: html_document
+---
+
+##BST 260 Final Project
+##Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
+
+This Rmd file is for data cleaning and aggregating BRFSS data into state level for each year
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+convert state code in BRFSS dataset into state names:
+```{r}
+st.codes<-data.frame(
+  state=c(1,2,4,5,6,8,9,10,11,12,13,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,44,45,46,47,48,49,50,51,53,54,55,56,72),full=c("alabama","alaska","arizona","arkansas","california","colorado","connecticut","delaware","district of columbia","florida","georgia","hawaii","idaho","illinois","indiana","iowa","kansas","kentucky","louisiana","maine","maryland","massachusetts","michigan","minnesota","mississippi","missouri","montana", "nebraska","nevada","new hampshire","new jersey","new mexico","new york","north carolina","north dakota","ohio","oklahoma","oregon","pennsylvania","rhode island","south carolina","south dakota","tennessee","texas","utah","vermont","virginia","washington","west virginia","wisconsin","wyoming","puerto rico"))
+```
+
+write state level data for 2000:
+
+```{r}
+library("SASxport")
+library(dplyr)
+data_00 <-read.xport("CDBRFS00.XPT")
+data <- data_00 %>% mutate(fips=X.STATE * 1000 + CTYCODE) %>%
+  filter(!is.na(fips)) %>%
+  select(X.STATE,CTYCODE,IMONTH,MENTHLTH,CVDINFAR,CVDCORHD,CVDSTROK,ASTHMA,AGE,SEX,ORACE,EDUCA,INCOME2,MARITAL,EMPLOY,HLTHPLAN,EXERANY,X.RFSMOK2,DRINKANY,X.BMI2CAT,X.BMI2,GENHLTH,QLACTLMT)
+```
+
+deal with NA values
+```{r}
+data$CTYCODE[data$CTYCODE %in% c(777,999)] <- c(NA)
+data$MENTHLTH[data$MENTHLTH %in% c(77,88,99)] <- c(NA) 
+data$CVDINFAR[data$CVDINFAR %in% c(7,9)] <- c(NA) 
+data$CVDCORHD[data$CVDCORHD %in% c(7,9)] <- c(NA) 
+data$CVDSTROK[data$CVDSTROK %in% c(7,9)] <- c(NA) 
+data$ASTHMA[data$ASTHMA %in% c(7,9)] <- c(NA) 
+data$AGE[data$AGE %in% c(7,9)] <- c(NA) 
+data$ORACE[data$ORACE %in% c(7,9)] <- c(NA)
+data$EDUCA[data$EDUCA == 9] <- c(NA) 
+data$INCOME2[data$INCOME2 %in% c(77,99)] <- c(NA) 
+data$MARITAL[data$MARITAL == 9] <- c(NA) 
+data$EMPLOY[data$EMPLOY == 9] <- c(NA) 
+data$HLTHPLAN[data$HLTHPLAN %in% c(7,9)] <- c(NA) 
+data$EXERANY[data$EXERANY %in% c(7,9)] <- c(NA) 
+data$X.RFSMOK2[data$X.RFSMOK2 == 9] <- c(NA) 
+data$DRINKANY[data$DRINKANY %in% c(7,9)] <- c(NA) 
+data$X.BMI2CAT[data$X.BMI2CAT == 9] <- c(NA) 
+data$X.BMI2[data$X.BMI2 == 999] <- c(NA) 
+data$GENHLTH[data$GENHLTH %in% c(7,9)] <- c(NA) 
+data$QLACTLM2[data$QLACTLMT %in% c(7,9)] <- c(NA) 
+```
+
+
+SELECT variables we need from the dataset
+```{r}
+data00 <-data %>% group_by(X.STATE) %>%
+         dplyr::summarise(year = 2000,
+         menthlth = mean(MENTHLTH, na.rm= TRUE),
+         heartattack = mean(CVDINFAR == 1, na.rm = TRUE),
+         ACheartdis = mean(CVDCORHD == 1, na.rm = TRUE),
+         stroke = mean(CVDSTROK == 1, na.rm = TRUE),
+         asthma = mean(ASTHMA == 1, na.rm = TRUE),
+         age = mean(AGE, na.rm = TRUE),
+         sex = mean(SEX == 2, na.rm = TRUE),
+         white = mean(ORACE == 1, na.rm = TRUE),
+         black = mean(ORACE == 2, na.rm = TRUE),
+         asian = mean(ORACE == 3, na.rm = TRUE),
+         race_other = mean(ORACE == 4 | ORACE == 5 | ORACE == 6, na.rm = TRUE),
+         educ1 = mean(EDUCA == 1|EDUCA == 2, na.rm = TRUE),
+         educ2 = mean(EDUCA == 3|EDUCA == 4, na.rm = TRUE),
+         educ3 = mean(EDUCA == 5|EDUCA == 6, na.rm = TRUE),
+         income1 = mean(INCOME2 == 1, na.rm = TRUE),
+         income2 = mean(INCOME2 == 2, na.rm = TRUE),
+         income3 = mean(INCOME2 == 3, na.rm = TRUE),
+         income4 = mean(INCOME2 == 4, na.rm = TRUE),
+         income5 = mean(INCOME2 == 5, na.rm = TRUE),
+         income6 = mean(INCOME2 == 6, na.rm = TRUE),
+         income7 = mean(INCOME2 == 7, na.rm = TRUE),
+         income8 = mean(INCOME2 == 8, na.rm = TRUE),
+         married = mean(MARITAL == 1, na.rm = TRUE),
+         unmarried = mean(MARITAL == 2| MARITAL == 3| MARITAL == 4| MARITAL == 5| MARITAL == 6, na.rm = TRUE),
+         employed = mean(EMPLOY == 1 | EMPLOY == 2, na.rm = TRUE),
+         out_of_work = mean(EMPLOY ==3 | EMPLOY ==4, na.rm = TRUE),
+         homemaker = mean(EMPLOY ==5, na.rm = TRUE),
+         student = mean(EMPLOY == 6, na.rm = TRUE),
+         employ_other = mean(EMPLOY ==7 | EMPLOY ==8, na.rm = TRUE),
+         hlthplan = mean(HLTHPLAN == 1, na.rm = TRUE),
+         exercise = mean(EXERANY == 1, na.rm = TRUE),
+         smoke = mean(X.RFSMOK2 == 2, na.rm = TRUE),
+         drink = mean(DRINKANY == 1, na.rm = TRUE),
+         bmi_cat1 = mean(X.BMI2CAT == 1, na.rm =TRUE),
+         bmi_cat2 = mean(X.BMI2CAT == 2, na.rm = TRUE),
+         bmi_cat3 = mean(X.BMI2CAT == 3, na.rm = TRUE),
+         bmi_cts = mean(X.BMI2,na.rm = TRUE),
+         genhlth_ex = mean(GENHLTH == 1, na.rm = TRUE),
+         genhlth_vg = mean(GENHLTH == 2, na.rm = TRUE),
+         genhlth_go = mean(GENHLTH == 3, na.rm = TRUE),
+         genhlth_fa = mean(GENHLTH == 4, na.rm = TRUE),
+         genhlth_po = mean(GENHLTH == 5, na.rm = TRUE),
+         qlactlm = mean(QLACTLMT == 1, na.rm = TRUE))
+```
+
+write csv:
+```{r}
+colnames(data00)[1] = "state"
+data00 = data00 %>%
+  left_join(st.codes,by = c("state"="state"))
+```
+```{r,eval=FALSE}
+write.csv(data00, file = "state_00.csv")
+```
+
+write state level data for 2001:
+
+```{r}
+library("SASxport")
+library(dplyr)
+data_01 <- read.xport("~/Desktop/Harvard/fall 2017/bst260/project/CDBRFS01.XPT")
+data <- data_01 %>% mutate(fips=X.STATE * 1000 + CTYCODE) %>%
+  filter(!is.na(fips)) %>%
+  select(fips, X.STATE,CTYCODE,IMONTH,MENTHLTH,CVDINFR2,CVDCRHD2,CVDSTRK2,ASTHMA2,AGE,SEX,ORACE2,EDUCA,INCOME2,MARITAL,EMPLOY,HLTHPLAN,EXERANY2,X.RFSMOK2,X.BMI2CAT,X.BMI2,GENHLTH,QLACTLM2)
+```
+
+deal with NA values
+```{r}
+data$CTYCODE[data$CTYCODE %in% c(777,999)] <- c(NA)
+data$MENTHLTH[data$MENTHLTH %in% c(77,88,99)] <- c(NA) 
+data$CVDINFR2[data$CVDINFR2 %in% c(7,9)] <- c(NA) 
+data$CVDCRHD2[data$CVDCRHD2 %in% c(7,9)] <- c(NA) 
+data$CVDSTRK2[data$CVDSTRK2 %in% c(7,9)] <- c(NA) 
+data$ASTHMA2[data$ASTHMA2 %in% c(7,9)] <- c(NA) 
+data$AGE[data$AGE %in% c(7,9)] <- c(NA) 
+data$ORACE2[data$ORACE2 %in% c(7,9)] <- c(NA)
+data$EDUCA[data$EDUCA == 9] <- c(NA) 
+data$INCOME2[data$INCOME2 %in% c(77,99)] <- c(NA) 
+data$MARITAL[data$MARITAL == 9] <- c(NA) 
+data$EMPLOY[data$EMPLOY == 9] <- c(NA) 
+data$HLTHPLAN[data$HLTHPLAN %in% c(7,9)] <- c(NA) 
+data$EXERANY2[data$EXERANY2 %in% c(7,9)] <- c(NA) 
+data$X.RFSMOK2[data$X.RFSMOK2 == 9] <- c(NA) 
+data$X.BMI2CAT[data$X.BMI2CAT == 9] <- c(NA) 
+data$X.BMI2[data$X.BMI2 == 999999] <- c(NA) 
+data$GENHLTH[data$GENHLTH %in% c(7,9)] <- c(NA) 
+data$QLACTLM2[data$QLACTLM2 %in% c(7,9)] <- c(NA) 
+```
+
+
+SELECT variables we need from dataset
+```{r}
+data01 <-data %>% group_by(X.STATE) %>%
+         dplyr::summarise(year = 2001,
+         menthlth = mean(MENTHLTH, na.rm= TRUE),
+         heartattack = mean(CVDINFR2 == 1, na.rm = TRUE),
+         ACheartdis = mean(CVDCRHD2 == 1, na.rm = TRUE),
+         stroke = mean(CVDSTRK2 == 1, na.rm = TRUE),
+         asthma = mean(ASTHMA2 == 1, na.rm = TRUE),
+         age = mean(AGE, na.rm = TRUE),
+         sex = mean(SEX == 2, na.rm = TRUE),
+         white = mean(ORACE2 == 1, na.rm = TRUE),
+         black = mean(ORACE2 == 2, na.rm = TRUE),
+         asian = mean(ORACE2 == 3, na.rm = TRUE),
+         race_other = mean(ORACE2 == 4 | ORACE2 == 5 | ORACE2 == 6, na.rm = TRUE),
+         educ1 = mean(EDUCA == 1|EDUCA == 2, na.rm = TRUE),
+         educ2 = mean(EDUCA == 3|EDUCA == 4, na.rm = TRUE),
+         educ3 = mean(EDUCA == 5|EDUCA == 6, na.rm = TRUE),
+         income1 = mean(INCOME2 == 1, na.rm = TRUE),
+         income2 = mean(INCOME2 == 2, na.rm = TRUE),
+         income3 = mean(INCOME2 == 3, na.rm = TRUE),
+         income4 = mean(INCOME2 == 4, na.rm = TRUE),
+         income5 = mean(INCOME2 == 5, na.rm = TRUE),
+         income6 = mean(INCOME2 == 6, na.rm = TRUE),
+         income7 = mean(INCOME2 == 7, na.rm = TRUE),
+         income8 = mean(INCOME2 == 8, na.rm = TRUE),
+         married = mean(MARITAL == 1, na.rm = TRUE),
+         unmarried = mean(MARITAL == 2| MARITAL == 3| MARITAL == 4| MARITAL == 5| MARITAL == 6, na.rm = TRUE),
+         employed = mean(EMPLOY == 1 | EMPLOY == 2, na.rm = TRUE),
+         out_of_work = mean(EMPLOY ==3 | EMPLOY ==4, na.rm = TRUE),
+         homemaker = mean(EMPLOY ==5, na.rm = TRUE),
+         student = mean(EMPLOY == 6, na.rm = TRUE),
+         employ_other = mean(EMPLOY ==7 | EMPLOY ==8, na.rm = TRUE),
+         hlthplan = mean(HLTHPLAN == 1, na.rm = TRUE),
+         exercise = mean(EXERANY2 == 1, na.rm = TRUE),
+         smoke = mean(X.RFSMOK2 == 2, na.rm = TRUE),
+         bmi_cat1 = mean(X.BMI2CAT == 1, na.rm =TRUE),
+         bmi_cat2 = mean(X.BMI2CAT == 2, na.rm = TRUE),
+         bmi_cat3 = mean(X.BMI2CAT == 3, na.rm = TRUE),
+         bmi_cts = mean(X.BMI2,na.rm = TRUE),
+         genhlth_ex = mean(GENHLTH == 1, na.rm = TRUE),
+         genhlth_vg = mean(GENHLTH == 2, na.rm = TRUE),
+         genhlth_go = mean(GENHLTH == 3, na.rm = TRUE),
+         genhlth_fa = mean(GENHLTH == 4, na.rm = TRUE),
+         genhlth_po = mean(GENHLTH == 5, na.rm = TRUE),
+         qlactlm = mean(QLACTLM2 == 1, na.rm = TRUE))
+```
+
+```{r}
+st.codes<-data.frame(
+  state=c(1,2,4,5,6,8,9,10,11,12,13,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,44,45,46,47,48,49,50,51,53,54,55,56,72),full=c("alabama","alaska","arizona","arkansas","california","colorado","connecticut","delaware","district of columbia","florida","georgia","hawaii","idaho","illinois","indiana","iowa","kansas","kentucky","louisiana","maine","maryland","massachusetts","michigan","minnesota","mississippi","missouri","montana", "nebraska","nevada","new hampshire","new jersey","new mexico","new york","north carolina","north dakota","ohio","oklahoma","oregon","pennsylvania","rhode island","south carolina","south dakota","tennessee","texas","utah","vermont","virginia","washington","west virginia","wisconsin","wyoming","puerto rico"))
+```
+
+```{r}
+colnames(data01)[1] = "state"
+data01 = data01 %>%
+  left_join(st.codes,by = c("state"="state"))
+```
+
+write csv
+```{r,eval=FALSE}
+write.csv(data01, file = "state_01.csv")
+```
+
+
+
+write state level data for 2002:
+
+```{r}
+library(SASxport)
+library(dplyr)
+data_02 <- read.xport("~/Desktop/Harvard/fall 2017/bst260/project/cdbrfs02.xpt")
+data <- data_02 %>% mutate(fips=X.STATE * 1000 + CTYCODE) %>%
+  filter(!is.na(fips)) %>%
+  select(fips,X.STATE,CTYCODE,IMONTH,MENTHLTH,CVDINFR2,CVDCRHD2,CVDSTRK2,ASTHMA2,AGE,SEX,ORACE2,EDUCA,INCOME2,MARITAL,EMPLOY,HLTHPLAN,EXERANY2,X.RFSMOK2,DRNKANY3,X.BMI2CAT,X.BMI2,GENHLTH,QLACTLM2)
+```
+
+deal with NA values
+
+```{r}
+data$CTYCODE[data$CTYCODE %in% c(777,999)] <- c(NA)
+data$MENTHLTH[data$MENTHLTH %in% c(77,88,99)] <- c(NA) 
+data$CVDINFR2[data$CVDINFR2 %in% c(7,9)] <- c(NA) 
+data$CVDCRHD2[data$CVDCRHD2 %in% c(7,9)] <- c(NA) 
+data$CVDSTRK2[data$CVDSTRK2 %in% c(7,9)] <- c(NA) 
+data$ASTHMA2[data$ASTHMA2 %in% c(7,9)] <- c(NA) 
+data$AGE[data$AGE %in% c(7,9)] <- c(NA) 
+data$ORACE2[data$ORACE2 %in% c(7,8,9)] <- c(NA)
+data$EDUCA[data$EDUCA == 9] <- c(NA) 
+data$INCOME2[data$INCOME2 %in% c(77,99)] <- c(NA) 
+data$MARITAL[data$MARITAL == 9] <- c(NA) 
+data$EMPLOY[data$EMPLOY == 9] <- c(NA) 
+data$HLTHPLAN[data$HLTHPLAN %in% c(7,9)] <- c(NA) 
+data$EXERANY2[data$EXERANY2 %in% c(7,9)] <- c(NA) 
+data$X.RFSMOK2[data$X.RFSMOK2 == 9] <- c(NA) 
+data$DRNKANY3[data$DRNKANY3 %in% c(7,9)] <- c(NA)
+data$X.BMI2CAT[data$X.BMI2CAT == 9] <- c(NA) 
+data$X.BMI2[data$X.BMI2 == 9999] <- c(NA) 
+data$GENHLTH[data$GENHLTH %in% c(7,9)] <- c(NA) 
+data$QLACTLM2[data$QLACTLM2 %in% c(7,9)] <- c(NA) 
+```
+
+
+SELECT variables we need from dataset
+
+```{r}
+data02 <-data %>% group_by(X.STATE) %>%
+         dplyr::summarise(year = 2002,
+         menthlth = mean(MENTHLTH, na.rm= TRUE),
+         heartattack = mean(CVDINFR2 == 1, na.rm = TRUE),
+         ACheartdis = mean(CVDCRHD2 == 1, na.rm = TRUE),
+         stroke = mean(CVDSTRK2 == 1, na.rm = TRUE),
+         asthma = mean(ASTHMA2 == 1, na.rm = TRUE),
+         age = mean(AGE, na.rm = TRUE),
+         sex = mean(SEX == 2, na.rm = TRUE),
+         white = mean(ORACE2 == 1, na.rm = TRUE),
+         black = mean(ORACE2 == 2, na.rm = TRUE),
+         asian = mean(ORACE2 == 3, na.rm = TRUE),
+         race_other = mean(ORACE2 == 4 | ORACE2 == 5 | ORACE2 == 6, na.rm = TRUE),
+         educ1 = mean(EDUCA == 1|EDUCA == 2, na.rm = TRUE),
+         educ2 = mean(EDUCA == 3|EDUCA == 4, na.rm = TRUE),
+         educ3 = mean(EDUCA == 5|EDUCA == 6, na.rm = TRUE),
+         income1 = mean(INCOME2 == 1, na.rm = TRUE),
+         income2 = mean(INCOME2 == 2, na.rm = TRUE),
+         income3 = mean(INCOME2 == 3, na.rm = TRUE),
+         income4 = mean(INCOME2 == 4, na.rm = TRUE),
+         income5 = mean(INCOME2 == 5, na.rm = TRUE),
+         income6 = mean(INCOME2 == 6, na.rm = TRUE),
+         income7 = mean(INCOME2 == 7, na.rm = TRUE),
+         income8 = mean(INCOME2 == 8, na.rm = TRUE),
+         married = mean(MARITAL == 1, na.rm = TRUE),
+         unmarried = mean(MARITAL == 2| MARITAL == 3| MARITAL == 4| MARITAL == 5| MARITAL == 6, na.rm = TRUE),
+         employed = mean(EMPLOY == 1 | EMPLOY == 2, na.rm = TRUE),
+         out_of_work = mean(EMPLOY ==3 | EMPLOY ==4, na.rm = TRUE),
+         homemaker = mean(EMPLOY ==5, na.rm = TRUE),
+         student = mean(EMPLOY == 6, na.rm = TRUE),
+         employ_other = mean(EMPLOY ==7 | EMPLOY ==8, na.rm = TRUE),
+         hlthplan = mean(HLTHPLAN == 1, na.rm = TRUE),
+         exercise = mean(EXERANY2 == 1, na.rm = TRUE),
+         smoke = mean(X.RFSMOK2 == 2, na.rm = TRUE),
+         drink = mean(DRNKANY3 == 1, na.rm = TRUE),
+         bmi_cat1 = mean(X.BMI2CAT == 1, na.rm =TRUE),
+         bmi_cat2 = mean(X.BMI2CAT == 2, na.rm = TRUE),
+         bmi_cat3 = mean(X.BMI2CAT == 3, na.rm = TRUE),
+         bmi_cts = mean(X.BMI2,na.rm = TRUE),
+         genhlth_ex = mean(GENHLTH == 1, na.rm = TRUE),
+         genhlth_vg = mean(GENHLTH == 2, na.rm = TRUE),
+         genhlth_go = mean(GENHLTH == 3, na.rm = TRUE),
+         genhlth_fa = mean(GENHLTH == 4, na.rm = TRUE),
+         genhlth_po = mean(GENHLTH == 5, na.rm = TRUE),
+         qlactlm = mean(QLACTLM2 == 1, na.rm = TRUE))
+```
+
+```{r}
+colnames(data02)[1] = "state"
+data02 = data02 %>%
+  left_join(st.codes,by = c("state"="state"))
+```
+
+```{r,eval=FALSE}
+write.csv(data02, file = "state_02.csv")
+```
+
+
+write state level data for 2003:
+
+```{r}
+library(SASxport)
+library(dplyr)
+data_03 <- read.xport("~/Desktop/Harvard/fall 2017/bst260/project/cdbrfs03.xpt")
+data <- data_03 %>% mutate(fips=X.STATE * 1000 + CTYCODE) %>%
+  filter(!is.na(fips)) %>%
+  select(fips,X.STATE,CTYCODE,IMONTH,MENTHLTH,CVDINFR2,CVDCRHD2,CVDSTRK2,ASTHMA2,AGE,SEX,ORACE2,EDUCA,INCOME2,MARITAL,EMPLOY,HLTHPLAN,EXERANY2,X.RFSMOK2,DRNKANY3,X.BMI3CAT,X.BMI3,GENHLTH,QLACTLM2)
+```
+
+deal with NA values
+
+```{r}
+data$CTYCODE[data$CTYCODE %in% c(777,999)] <- c(NA)
+data$MENTHLTH[data$MENTHLTH %in% c(77,88,99)] <- c(NA) 
+data$CVDINFR2[data$CVDINFR2 %in% c(7,9)] <- c(NA) 
+data$CVDCRHD2[data$CVDCRHD2 %in% c(7,9)] <- c(NA) 
+data$CVDSTRK2[data$CVDSTRK2 %in% c(7,9)] <- c(NA) 
+data$ASTHMA2[data$ASTHMA2 %in% c(7,9)] <- c(NA) 
+data$AGE[data$AGE %in% c(7,9)] <- c(NA) 
+data$ORACE2[data$ORACE2 %in% c(7,8,9)] <- c(NA)
+data$EDUCA[data$EDUCA == 9] <- c(NA) 
+data$INCOME2[data$INCOME2 %in% c(77,99)] <- c(NA) 
+data$MARITAL[data$MARITAL == 9] <- c(NA) 
+data$EMPLOY[data$EMPLOY == 9] <- c(NA) 
+data$HLTHPLAN[data$HLTHPLAN %in% c(7,9)] <- c(NA) 
+data$EXERANY2[data$EXERANY2 %in% c(7,9)] <- c(NA) 
+data$X.RFSMOK2[data$X.RFSMOK2 == 9] <- c(NA) 
+data$DRNKANY3[data$DRNKANY3 %in% c(7,9)] <- c(NA)
+data$X.BMI3CAT[data$X.BMI3CAT == 9] <- c(NA) 
+data$X.BMI3[data$X.BMI3 == 9999] <- c(NA) 
+data$GENHLTH[data$GENHLTH %in% c(7,9)] <- c(NA) 
+data$QLACTLM2[data$QLACTLM2 %in% c(7,9)] <- c(NA) 
+```
+
+
+SELECT variables we need from dataset
+
+```{r}
+data03 <-data %>% group_by(X.STATE) %>%
+         dplyr::summarise(year = 2003,
+         menthlth = mean(MENTHLTH, na.rm= TRUE),
+         heartattack = mean(CVDINFR2 == 1, na.rm = TRUE),
+         ACheartdis = mean(CVDCRHD2 == 1, na.rm = TRUE),
+         stroke = mean(CVDSTRK2 == 1, na.rm = TRUE),
+         asthma = mean(ASTHMA2 == 1, na.rm = TRUE),
+         age = mean(AGE, na.rm = TRUE),
+         sex = mean(SEX == 2, na.rm = TRUE),
+         white = mean(ORACE2 == 1, na.rm = TRUE),
+         black = mean(ORACE2 == 2, na.rm = TRUE),
+         asian = mean(ORACE2 == 3, na.rm = TRUE),
+         race_other = mean(ORACE2 == 4 | ORACE2 == 5 | ORACE2 == 6, na.rm = TRUE),
+         educ1 = mean(EDUCA == 1|EDUCA == 2, na.rm = TRUE),
+         educ2 = mean(EDUCA == 3|EDUCA == 4, na.rm = TRUE),
+         educ3 = mean(EDUCA == 5|EDUCA == 6, na.rm = TRUE),
+         income1 = mean(INCOME2 == 1, na.rm = TRUE),
+         income2 = mean(INCOME2 == 2, na.rm = TRUE),
+         income3 = mean(INCOME2 == 3, na.rm = TRUE),
+         income4 = mean(INCOME2 == 4, na.rm = TRUE),
+         income5 = mean(INCOME2 == 5, na.rm = TRUE),
+         income6 = mean(INCOME2 == 6, na.rm = TRUE),
+         income7 = mean(INCOME2 == 7, na.rm = TRUE),
+         income8 = mean(INCOME2 == 8, na.rm = TRUE),
+         married = mean(MARITAL == 1, na.rm = TRUE),
+         unmarried = mean(MARITAL == 2| MARITAL == 3| MARITAL == 4| MARITAL == 5| MARITAL == 6, na.rm = TRUE),
+         employed = mean(EMPLOY == 1 | EMPLOY == 2, na.rm = TRUE),
+         out_of_work = mean(EMPLOY ==3 | EMPLOY ==4, na.rm = TRUE),
+         homemaker = mean(EMPLOY ==5, na.rm = TRUE),
+         student = mean(EMPLOY == 6, na.rm = TRUE),
+         employ_other = mean(EMPLOY ==7 | EMPLOY ==8, na.rm = TRUE),
+         hlthplan = mean(HLTHPLAN == 1, na.rm = TRUE),
+         exercise = mean(EXERANY2 == 1, na.rm = TRUE),
+         smoke = mean(X.RFSMOK2 == 2, na.rm = TRUE),
+         drink = mean(DRNKANY3 == 1, na.rm = TRUE),
+         bmi_cat1 = mean(X.BMI3CAT == 1, na.rm =TRUE),
+         bmi_cat2 = mean(X.BMI3CAT == 2, na.rm = TRUE),
+         bmi_cat3 = mean(X.BMI3CAT == 3, na.rm = TRUE),
+         bmi_cts = mean(X.BMI3,na.rm = TRUE),
+         genhlth_ex = mean(GENHLTH == 1, na.rm = TRUE),
+         genhlth_vg = mean(GENHLTH == 2, na.rm = TRUE),
+         genhlth_go = mean(GENHLTH == 3, na.rm = TRUE),
+         genhlth_fa = mean(GENHLTH == 4, na.rm = TRUE),
+         genhlth_po = mean(GENHLTH == 5, na.rm = TRUE),
+         qlactlm = mean(QLACTLM2 == 1, na.rm = TRUE))
+```
+
+```{r}
+colnames(data03)[1] = "state"
+data03 = data03 %>%
+  left_join(st.codes,by = c("state"="state"))
+```
+
+```{r,eval=FALSE}
+write.csv(data03, file = "state_03.csv")
+```
+
+
+
+write state level data for 2004:
+
+```{r}
+library(SASxport)
+library(dplyr)
+data_04 <- read.xport("~/Desktop/Harvard/fall 2017/bst260/project/CDBRFS04.XPT")
+data <- data_04 %>% mutate(fips=X.STATE * 1000 + CTYCODE) %>%
+  filter(!is.na(fips)) %>%
+  select(fips,X.STATE,CTYCODE,MENTHLTH,CVDINFR2,CVDCRHD2,CVDSTRK2,ASTHMA2,AGE,SEX,ORACE2,EDUCA,INCOME2,MARITAL,EMPLOY,HLTHPLAN,EXERANY2,X.RFSMOK2,DRNKANY3,X.BMI4CAT,X.BMI4,GENHLTH,QLACTLM2)
+```
+
+deal with NA values
+
+```{r}
+data$CTYCODE[data$CTYCODE %in% c(777,999)] <- c(NA)
+data$MENTHLTH[data$MENTHLTH %in% c(77,88,99)] <- c(NA) 
+data$CVDINFR2[data$CVDINFR2 %in% c(7,9)] <- c(NA) 
+data$CVDCRHD2[data$CVDCRHD2 %in% c(7,9)] <- c(NA) 
+data$CVDSTRK2[data$CVDSTRK2 %in% c(7,9)] <- c(NA) 
+data$ASTHMA2[data$ASTHMA2 %in% c(7,9)] <- c(NA) 
+data$AGE[data$AGE %in% c(7,9)] <- c(NA) 
+data$ORACE2[data$ORACE2 %in% c(7,8,9)] <- c(NA)
+data$EDUCA[data$EDUCA == 9] <- c(NA) 
+data$INCOME2[data$INCOME2 %in% c(77,99)] <- c(NA) 
+data$MARITAL[data$MARITAL == 9] <- c(NA) 
+data$EMPLOY[data$EMPLOY == 9] <- c(NA) 
+data$HLTHPLAN[data$HLTHPLAN %in% c(7,9)] <- c(NA) 
+data$EXERANY2[data$EXERANY2 %in% c(7,9)] <- c(NA) 
+data$X.RFSMOK2[data$X.RFSMOK2 == 9] <- c(NA) 
+data$DRNKANY3[data$DRNKANY3 %in% c(7,9)] <- c(NA)
+data$X.BMI3CAT[data$X.BMI4CAT == 9] <- c(NA) 
+data$X.BMI3[data$X.BMI4 == 9999] <- c(NA) 
+data$GENHLTH[data$GENHLTH %in% c(7,9)] <- c(NA) 
+data$QLACTLM2[data$QLACTLM2 %in% c(7,9)] <- c(NA) 
+```
+
+
+SELECT variables we need from dataset
+
+```{r}
+data04 <-data %>% group_by(X.STATE) %>%
+         dplyr::summarise(year = 2004,
+         menthlth = mean(MENTHLTH, na.rm= TRUE),
+         heartattack = mean(CVDINFR2 == 1, na.rm = TRUE),
+         ACheartdis = mean(CVDCRHD2 == 1, na.rm = TRUE),
+         stroke = mean(CVDSTRK2 == 1, na.rm = TRUE),
+         asthma = mean(ASTHMA2 == 1, na.rm = TRUE),
+         age = mean(AGE, na.rm = TRUE),
+         sex = mean(SEX == 2, na.rm = TRUE),
+         white = mean(ORACE2 == 1, na.rm = TRUE),
+         black = mean(ORACE2 == 2, na.rm = TRUE),
+         asian = mean(ORACE2 == 3, na.rm = TRUE),
+         race_other = mean(ORACE2 == 4 | ORACE2 == 5 | ORACE2 == 6, na.rm = TRUE),
+         educ1 = mean(EDUCA == 1|EDUCA == 2, na.rm = TRUE),
+         educ2 = mean(EDUCA == 3|EDUCA == 4, na.rm = TRUE),
+         educ3 = mean(EDUCA == 5|EDUCA == 6, na.rm = TRUE),
+         income1 = mean(INCOME2 == 1, na.rm = TRUE),
+         income2 = mean(INCOME2 == 2, na.rm = TRUE),
+         income3 = mean(INCOME2 == 3, na.rm = TRUE),
+         income4 = mean(INCOME2 == 4, na.rm = TRUE),
+         income5 = mean(INCOME2 == 5, na.rm = TRUE),
+         income6 = mean(INCOME2 == 6, na.rm = TRUE),
+         income7 = mean(INCOME2 == 7, na.rm = TRUE),
+         income8 = mean(INCOME2 == 8, na.rm = TRUE),
+         married = mean(MARITAL == 1, na.rm = TRUE),
+         unmarried = mean(MARITAL == 2| MARITAL == 3| MARITAL == 4| MARITAL == 5| MARITAL == 6, na.rm = TRUE),
+         employed = mean(EMPLOY == 1 | EMPLOY == 2, na.rm = TRUE),
+         out_of_work = mean(EMPLOY ==3 | EMPLOY ==4, na.rm = TRUE),
+         homemaker = mean(EMPLOY ==5, na.rm = TRUE),
+         student = mean(EMPLOY == 6, na.rm = TRUE),
+         employ_other = mean(EMPLOY ==7 | EMPLOY ==8, na.rm = TRUE),
+         hlthplan = mean(HLTHPLAN == 1, na.rm = TRUE),
+         exercise = mean(EXERANY2 == 1, na.rm = TRUE),
+         smoke = mean(X.RFSMOK2 == 2, na.rm = TRUE),
+         drink = mean(DRNKANY3 == 1, na.rm = TRUE),
+         bmi_cat1 = mean(X.BMI4CAT == 1, na.rm =TRUE),
+         bmi_cat2 = mean(X.BMI4CAT == 2, na.rm = TRUE),
+         bmi_cat3 = mean(X.BMI4CAT == 3, na.rm = TRUE),
+         bmi_cts = mean(X.BMI4,na.rm = TRUE),
+         genhlth_ex = mean(GENHLTH == 1, na.rm = TRUE),
+         genhlth_vg = mean(GENHLTH == 2, na.rm = TRUE),
+         genhlth_go = mean(GENHLTH == 3, na.rm = TRUE),
+         genhlth_fa = mean(GENHLTH == 4, na.rm = TRUE),
+         genhlth_po = mean(GENHLTH == 5, na.rm = TRUE),
+         qlactlm = mean(QLACTLM2 == 1, na.rm = TRUE))
+```
+
+```{r}
+colnames(data04)[1] = "state"
+data04 = data04 %>%
+  left_join(st.codes,by = c("state"="state"))
+```
+
+```{r,eval=FALSE}
+write.csv(data04, file = "state_04.csv")
+```
+
+
+
+write state level data for 2005:
+
+```{r}
+library(SASxport)
+library(dplyr)
+data_05 <- read.xport("~/Desktop/Harvard/fall 2017/bst260/project/CDBRFS05.XPT")
+data <- data_05 %>% mutate(fips=X.STATE * 1000 + CTYCODE) %>%
+  filter(!is.na(fips)) %>%
+  select(fips,X.STATE,CTYCODE,MSCODE,IMONTH,MENTHLTH,CVDINFR3,CVDCRHD3,CVDSTRK3,ASTHMA2,AGE,SEX,ORACE2,EDUCA,INCOME2,MARITAL,EMPLOY,HLTHPLAN,EXERANY2,X.RFSMOK3,DRNKANY4,X.BMI4CAT,X.BMI4,GENHLTH,QLACTLM2)
+```
+
+deal with NA values
+
+```{r}
+data$CTYCODE[data$CTYCODE %in% c(777,999)] <- c(NA)
+data$MENTHLTH[data$MENTHLTH %in% c(77,88,99)] <- c(NA) 
+data$CVDINFR2[data$CVDINFR3 %in% c(7,9)] <- c(NA) 
+data$CVDCRHD2[data$CVDCRHD3 %in% c(7,9)] <- c(NA) 
+data$CVDSTRK2[data$CVDSTRK3 %in% c(7,9)] <- c(NA) 
+data$ASTHMA2[data$ASTHMA2 %in% c(7,9)] <- c(NA) 
+data$AGE[data$AGE %in% c(7,9)] <- c(NA) 
+data$ORACE2[data$ORACE2 %in% c(7,8,9)] <- c(NA)
+data$EDUCA[data$EDUCA == 9] <- c(NA) 
+data$INCOME2[data$INCOME2 %in% c(77,99)] <- c(NA) 
+data$MARITAL[data$MARITAL == 9] <- c(NA) 
+data$EMPLOY[data$EMPLOY == 9] <- c(NA) 
+data$HLTHPLAN[data$HLTHPLAN %in% c(7,9)] <- c(NA) 
+data$EXERANY2[data$EXERANY2 %in% c(7,9)] <- c(NA) 
+data$X.RFSMOK3[data$X.RFSMOK3 == 9] <- c(NA) 
+data$DRNKANY3[data$DRNKANY4 %in% c(7,9)] <- c(NA)
+data$X.BMI3CAT[data$X.BMI4CAT == 9] <- c(NA) 
+data$X.BMI3[data$X.BMI4 == 9999] <- c(NA) 
+data$GENHLTH[data$GENHLTH %in% c(7,9)] <- c(NA) 
+data$QLACTLM2[data$QLACTLM2 %in% c(7,9)] <- c(NA) 
+```
+
+
+SELECT variables we need from dataset
+
+```{r}
+data05 <-data %>% group_by(X.STATE) %>%
+         dplyr::summarise(year = 2005,
+         menthlth = mean(MENTHLTH, na.rm= TRUE),
+         heartattack = mean(CVDINFR3 == 1, na.rm = TRUE),
+         ACheartdis = mean(CVDCRHD3 == 1, na.rm = TRUE),
+         stroke = mean(CVDSTRK3 == 1, na.rm = TRUE),
+         asthma = mean(ASTHMA2 == 1, na.rm = TRUE),
+         age = mean(AGE, na.rm = TRUE),
+         sex = mean(SEX == 2, na.rm = TRUE),
+         white = mean(ORACE2 == 1, na.rm = TRUE),
+         black = mean(ORACE2 == 2, na.rm = TRUE),
+         asian = mean(ORACE2 == 3, na.rm = TRUE),
+         race_other = mean(ORACE2 == 4 | ORACE2 == 5 | ORACE2 == 6, na.rm = TRUE),
+         educ1 = mean(EDUCA == 1|EDUCA == 2, na.rm = TRUE),
+         educ2 = mean(EDUCA == 3|EDUCA == 4, na.rm = TRUE),
+         educ3 = mean(EDUCA == 5|EDUCA == 6, na.rm = TRUE),
+         income1 = mean(INCOME2 == 1, na.rm = TRUE),
+         income2 = mean(INCOME2 == 2, na.rm = TRUE),
+         income3 = mean(INCOME2 == 3, na.rm = TRUE),
+         income4 = mean(INCOME2 == 4, na.rm = TRUE),
+         income5 = mean(INCOME2 == 5, na.rm = TRUE),
+         income6 = mean(INCOME2 == 6, na.rm = TRUE),
+         income7 = mean(INCOME2 == 7, na.rm = TRUE),
+         income8 = mean(INCOME2 == 8, na.rm = TRUE),
+         married = mean(MARITAL == 1, na.rm = TRUE),
+         unmarried = mean(MARITAL == 2| MARITAL == 3| MARITAL == 4| MARITAL == 5| MARITAL == 6, na.rm = TRUE),
+         employed = mean(EMPLOY == 1 | EMPLOY == 2, na.rm = TRUE),
+         out_of_work = mean(EMPLOY ==3 | EMPLOY ==4, na.rm = TRUE),
+         homemaker = mean(EMPLOY ==5, na.rm = TRUE),
+         student = mean(EMPLOY == 6, na.rm = TRUE),
+         employ_other = mean(EMPLOY ==7 | EMPLOY ==8, na.rm = TRUE),
+         hlthplan = mean(HLTHPLAN == 1, na.rm = TRUE),
+         exercise = mean(EXERANY2 == 1, na.rm = TRUE),
+         smoke = mean(X.RFSMOK3 == 2, na.rm = TRUE),
+         drink = mean(DRNKANY4 == 1, na.rm = TRUE),
+         bmi_cat1 = mean(X.BMI4CAT == 1, na.rm =TRUE),
+         bmi_cat2 = mean(X.BMI4CAT == 2, na.rm = TRUE),
+         bmi_cat3 = mean(X.BMI4CAT == 3, na.rm = TRUE),
+         bmi_cts = mean(X.BMI4,na.rm = TRUE),
+         genhlth_ex = mean(GENHLTH == 1, na.rm = TRUE),
+         genhlth_vg = mean(GENHLTH == 2, na.rm = TRUE),
+         genhlth_go = mean(GENHLTH == 3, na.rm = TRUE),
+         genhlth_fa = mean(GENHLTH == 4, na.rm = TRUE),
+         genhlth_po = mean(GENHLTH == 5, na.rm = TRUE),
+         qlactlm = mean(QLACTLM2 == 1, na.rm = TRUE))
+```
+
+```{r}
+colnames(data05)[1] = "state"
+data05 = data05 %>%
+  left_join(st.codes,by = c("state"="state"))
+```
+
+```{r,eval=FALSE}
+write.csv(data05, file = "state_05.csv")
+```
+
+
+
+write state level data for 2006:
+
+```{r}
+library(SASxport)
+library(dplyr)
+data_06 <- read.xport("~/Desktop/Harvard/fall 2017/bst260/project/CDBRFS06.XPT")
+data <- data_06 %>% mutate(fips=X.STATE * 1000 + CTYCODE) %>%
+  filter(!is.na(fips)) %>%
+  select(fips,X.STATE,CTYCODE,MSCODE,IMONTH,MENTHLTH,CVDINFR3,CVDCRHD3,CVDSTRK3,ASTHMA2,AGE,SEX,ORACE2,EDUCA,INCOME2,MARITAL,EMPLOY,HLTHPLAN,EXERANY2,X.RFSMOK3,DRNKANY4,X.BMI4CAT,X.BMI4,GENHLTH,QLACTLM2)
+```
+
+deal with NA values
+
+```{r}
+data$CTYCODE[data$CTYCODE %in% c(777,999)] <- c(NA)
+data$MENTHLTH[data$MENTHLTH %in% c(77,88,99)] <- c(NA) 
+data$CVDINFR2[data$CVDINFR3 %in% c(7,9)] <- c(NA) 
+data$CVDCRHD2[data$CVDCRHD3 %in% c(7,9)] <- c(NA) 
+data$CVDSTRK2[data$CVDSTRK3 %in% c(7,9)] <- c(NA) 
+data$ASTHMA2[data$ASTHMA2 %in% c(7,9)] <- c(NA) 
+data$AGE[data$AGE %in% c(7,9)] <- c(NA) 
+data$ORACE2[data$ORACE2 %in% c(7,8,9)] <- c(NA)
+data$EDUCA[data$EDUCA == 9] <- c(NA) 
+data$INCOME2[data$INCOME2 %in% c(77,99)] <- c(NA) 
+data$MARITAL[data$MARITAL == 9] <- c(NA) 
+data$EMPLOY[data$EMPLOY == 9] <- c(NA) 
+data$HLTHPLAN[data$HLTHPLAN %in% c(7,9)] <- c(NA) 
+data$EXERANY2[data$EXERANY2 %in% c(7,9)] <- c(NA) 
+data$X.RFSMOK3[data$X.RFSMOK3 == 9] <- c(NA) 
+data$DRNKANY3[data$DRNKANY4 %in% c(7,9)] <- c(NA)
+data$X.BMI3CAT[data$X.BMI4CAT == 9] <- c(NA) 
+data$X.BMI3[data$X.BMI4 == 9999] <- c(NA) 
+data$GENHLTH[data$GENHLTH %in% c(7,9)] <- c(NA) 
+data$QLACTLM2[data$QLACTLM2 %in% c(7,9)] <- c(NA) 
+```
+
+
+SELECT variables we need from dataset
+
+```{r}
+data06 <-data %>% group_by(X.STATE) %>%
+         dplyr::summarise(year = 2006,
+         menthlth = mean(MENTHLTH, na.rm= TRUE),
+         heartattack = mean(CVDINFR3 == 1, na.rm = TRUE),
+         ACheartdis = mean(CVDCRHD3 == 1, na.rm = TRUE),
+         stroke = mean(CVDSTRK3 == 1, na.rm = TRUE),
+         asthma = mean(ASTHMA2 == 1, na.rm = TRUE),
+         age = mean(AGE, na.rm = TRUE),
+         sex = mean(SEX == 2, na.rm = TRUE),
+         white = mean(ORACE2 == 1, na.rm = TRUE),
+         black = mean(ORACE2 == 2, na.rm = TRUE),
+         asian = mean(ORACE2 == 3, na.rm = TRUE),
+         race_other = mean(ORACE2 == 4 | ORACE2 == 5 | ORACE2 == 6, na.rm = TRUE),
+         educ1 = mean(EDUCA == 1|EDUCA == 2, na.rm = TRUE),
+         educ2 = mean(EDUCA == 3|EDUCA == 4, na.rm = TRUE),
+         educ3 = mean(EDUCA == 5|EDUCA == 6, na.rm = TRUE),
+         income1 = mean(INCOME2 == 1, na.rm = TRUE),
+         income2 = mean(INCOME2 == 2, na.rm = TRUE),
+         income3 = mean(INCOME2 == 3, na.rm = TRUE),
+         income4 = mean(INCOME2 == 4, na.rm = TRUE),
+         income5 = mean(INCOME2 == 5, na.rm = TRUE),
+         income6 = mean(INCOME2 == 6, na.rm = TRUE),
+         income7 = mean(INCOME2 == 7, na.rm = TRUE),
+         income8 = mean(INCOME2 == 8, na.rm = TRUE),
+         married = mean(MARITAL == 1, na.rm = TRUE),
+         unmarried = mean(MARITAL == 2| MARITAL == 3| MARITAL == 4| MARITAL == 5| MARITAL == 6, na.rm = TRUE),
+         employed = mean(EMPLOY == 1 | EMPLOY == 2, na.rm = TRUE),
+         out_of_work = mean(EMPLOY ==3 | EMPLOY ==4, na.rm = TRUE),
+         homemaker = mean(EMPLOY ==5, na.rm = TRUE),
+         student = mean(EMPLOY == 6, na.rm = TRUE),
+         employ_other = mean(EMPLOY ==7 | EMPLOY ==8, na.rm = TRUE),
+         hlthplan = mean(HLTHPLAN == 1, na.rm = TRUE),
+         exercise = mean(EXERANY2 == 1, na.rm = TRUE),
+         smoke = mean(X.RFSMOK3 == 2, na.rm = TRUE),
+         drink = mean(DRNKANY4 == 1, na.rm = TRUE),
+         bmi_cat1 = mean(X.BMI4CAT == 1, na.rm =TRUE),
+         bmi_cat2 = mean(X.BMI4CAT == 2, na.rm = TRUE),
+         bmi_cat3 = mean(X.BMI4CAT == 3, na.rm = TRUE),
+         bmi_cts = mean(X.BMI4,na.rm = TRUE),
+         genhlth_ex = mean(GENHLTH == 1, na.rm = TRUE),
+         genhlth_vg = mean(GENHLTH == 2, na.rm = TRUE),
+         genhlth_go = mean(GENHLTH == 3, na.rm = TRUE),
+         genhlth_fa = mean(GENHLTH == 4, na.rm = TRUE),
+         genhlth_po = mean(GENHLTH == 5, na.rm = TRUE),
+         qlactlm = mean(QLACTLM2 == 1, na.rm = TRUE))
+```
+
+```{r}
+colnames(data06)[1] = "state"
+data06 = data06 %>%
+  left_join(st.codes,by = c("state"="state"))
+```
+
+```{r,eval=FALSE}
+write.csv(data06, file = "state_06.csv")
+```
+
+
+write state level data for 2007:
+
+```{r}
+library(SASxport)
+library(dplyr)
+data_07 <- read.xport("~/Desktop/Harvard/fall 2017/bst260/project/CDBRFS07.XPT")
+data <- data_07 %>% mutate(fips=X.STATE * 1000 + CTYCODE) %>%
+  filter(!is.na(fips)) %>%
+  select(fips,X.STATE,CTYCODE,MSCODE,IMONTH,MENTHLTH,CVDINFR4,CVDCRHD4,CVDSTRK3,ASTHMA2,AGE,SEX,ORACE2,EDUCA,INCOME2,MARITAL,EMPLOY,HLTHPLAN,EXERANY2,X.RFSMOK3,DRNKANY4,X.BMI4CAT,X.BMI4,GENHLTH,QLACTLM2)
+```
+
+deal with NA values
+
+```{r}
+data$CTYCODE[data$CTYCODE %in% c(777,999)] <- c(NA)
+data$MENTHLTH[data$MENTHLTH %in% c(77,88,99)] <- c(NA) 
+data$CVDINFR2[data$CVDINFR4 %in% c(7,9)] <- c(NA) 
+data$CVDCRHD2[data$CVDCRHD4 %in% c(7,9)] <- c(NA) 
+data$CVDSTRK2[data$CVDSTRK3 %in% c(7,9)] <- c(NA) 
+data$ASTHMA2[data$ASTHMA2 %in% c(7,9)] <- c(NA) 
+data$AGE[data$AGE %in% c(7,9)] <- c(NA) 
+data$ORACE2[data$ORACE2 %in% c(7,8,9)] <- c(NA)
+data$EDUCA[data$EDUCA == 9] <- c(NA) 
+data$INCOME2[data$INCOME2 %in% c(77,99)] <- c(NA) 
+data$MARITAL[data$MARITAL == 9] <- c(NA) 
+data$EMPLOY[data$EMPLOY == 9] <- c(NA) 
+data$HLTHPLAN[data$HLTHPLAN %in% c(7,9)] <- c(NA) 
+data$EXERANY2[data$EXERANY2 %in% c(7,9)] <- c(NA) 
+data$X.RFSMOK3[data$X.RFSMOK3 == 9] <- c(NA) 
+data$DRNKANY3[data$DRNKANY4 %in% c(7,9)] <- c(NA)
+data$X.BMI3CAT[data$X.BMI4CAT == 9] <- c(NA) 
+data$X.BMI3[data$X.BMI4 == 9999] <- c(NA) 
+data$GENHLTH[data$GENHLTH %in% c(7,9)] <- c(NA) 
+data$QLACTLM2[data$QLACTLM2 %in% c(7,9)] <- c(NA) 
+```
+
+
+SELECT variables we need from dataset
+
+```{r}
+data07 <-data %>% group_by(X.STATE) %>%
+         dplyr::summarise(year = 2007,
+         menthlth = mean(MENTHLTH, na.rm= TRUE),
+         heartattack = mean(CVDINFR4 == 1, na.rm = TRUE),
+         ACheartdis = mean(CVDCRHD4 == 1, na.rm = TRUE),
+         stroke = mean(CVDSTRK3 == 1, na.rm = TRUE),
+         asthma = mean(ASTHMA2 == 1, na.rm = TRUE),
+         age = mean(AGE, na.rm = TRUE),
+         sex = mean(SEX == 2, na.rm = TRUE),
+         white = mean(ORACE2 == 1, na.rm = TRUE),
+         black = mean(ORACE2 == 2, na.rm = TRUE),
+         asian = mean(ORACE2 == 3, na.rm = TRUE),
+         race_other = mean(ORACE2 == 4 | ORACE2 == 5 | ORACE2 == 6, na.rm = TRUE),
+         educ1 = mean(EDUCA == 1|EDUCA == 2, na.rm = TRUE),
+         educ2 = mean(EDUCA == 3|EDUCA == 4, na.rm = TRUE),
+         educ3 = mean(EDUCA == 5|EDUCA == 6, na.rm = TRUE),
+         income1 = mean(INCOME2 == 1, na.rm = TRUE),
+         income2 = mean(INCOME2 == 2, na.rm = TRUE),
+         income3 = mean(INCOME2 == 3, na.rm = TRUE),
+         income4 = mean(INCOME2 == 4, na.rm = TRUE),
+         income5 = mean(INCOME2 == 5, na.rm = TRUE),
+         income6 = mean(INCOME2 == 6, na.rm = TRUE),
+         income7 = mean(INCOME2 == 7, na.rm = TRUE),
+         income8 = mean(INCOME2 == 8, na.rm = TRUE),
+         married = mean(MARITAL == 1, na.rm = TRUE),
+         unmarried = mean(MARITAL == 2| MARITAL == 3| MARITAL == 4| MARITAL == 5| MARITAL == 6, na.rm = TRUE),
+         employed = mean(EMPLOY == 1 | EMPLOY == 2, na.rm = TRUE),
+         out_of_work = mean(EMPLOY ==3 | EMPLOY ==4, na.rm = TRUE),
+         homemaker = mean(EMPLOY ==5, na.rm = TRUE),
+         student = mean(EMPLOY == 6, na.rm = TRUE),
+         employ_other = mean(EMPLOY ==7 | EMPLOY ==8, na.rm = TRUE),
+         hlthplan = mean(HLTHPLAN == 1, na.rm = TRUE),
+         exercise = mean(EXERANY2 == 1, na.rm = TRUE),
+         smoke = mean(X.RFSMOK3 == 2, na.rm = TRUE),
+         drink = mean(DRNKANY4 == 1, na.rm = TRUE),
+         bmi_cat1 = mean(X.BMI4CAT == 1, na.rm =TRUE),
+         bmi_cat2 = mean(X.BMI4CAT == 2, na.rm = TRUE),
+         bmi_cat3 = mean(X.BMI4CAT == 3, na.rm = TRUE),
+         bmi_cts = mean(X.BMI4,na.rm = TRUE),
+         genhlth_ex = mean(GENHLTH == 1, na.rm = TRUE),
+         genhlth_vg = mean(GENHLTH == 2, na.rm = TRUE),
+         genhlth_go = mean(GENHLTH == 3, na.rm = TRUE),
+         genhlth_fa = mean(GENHLTH == 4, na.rm = TRUE),
+         genhlth_po = mean(GENHLTH == 5, na.rm = TRUE),
+         qlactlm = mean(QLACTLM2 == 1, na.rm = TRUE))
+```
+
+```{r}
+colnames(data07)[1] = "state"
+data07 = data07 %>%
+  left_join(st.codes,by = c("state"="state"))
+```
+
+write csv file:
+```{r,eval=FALSE}
+write.csv(data07, file = "state_07.csv")
+```
