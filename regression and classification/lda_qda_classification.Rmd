@@ -1,0 +1,74 @@
+---
+title: "lda&qda"
+author: "Xuewei Zhang"
+data: "12/08/2017"
+output: html_document
+
+
+---
+
+##BST 260 Final Project
+##Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
+
+This Rmd file is for useing LDA and QDA to predict class of mental health
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(ISLR)
+library(MASS)
+library(mvtnorm)
+```
+
+
+read data of train and test
+```{r,warning=FALSE}
+train_lda = read.csv("train.csv")
+test_lda = read.csv("test.csv")
+attach(train_lda)
+attach(test_lda)
+
+names(train_lda)
+names(test_lda)
+
+
+###Use LDA to predict data and compare them with test data
+
+lda.fit=lda(mental_class~.,data=train_lda)
+lda.fit
+lda.pred=predict(lda.fit, test_lda)
+lda.class=lda.pred$class 
+table(lda.class,test_lda$mental_class)
+(390+1094)/(159+319+390+1094) 
+####picture!
+ldahist(data = lda.pred$x[,1], g=mental_class)
+#####
+
+###picture for two exp:
+lda.fit2=lda(mental_class~student+employed,data=train_lda)
+lda.fit2
+lda.pred2=predict(lda.fit2, test_lda)
+ldahist(data = lda.pred2$x[,1], g=mental_class)
+
+train_lda = train_lda[complete.cases(train_lda),]
+test_lda = test_lda[complete.cases(test_lda),]
+
+
+train_lda %>% mutate(mental_class = factor(mental_class)) %>% 
+  ggplot(aes(employed, student, fill = mental_class, color=mental_class)) + 
+  geom_point(pch=21,cex=5, color="black") + 
+  stat_ellipse(lwd=2, type="norm")
+
+```
+
+
+Use QDA to predict data and compare them with test data
+```{r}
+qda.fit=qda(mental_class~.,data=train_lda)
+qda.fit
+qda.pred=predict(qda.fit, test_lda)
+qda.class=qda.pred$class 
+table(qda.class,test_lda$mental_class)
+(360+1076)/(349+177+360+1076) 
+
+```
