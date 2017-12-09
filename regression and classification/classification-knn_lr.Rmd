@@ -1,0 +1,73 @@
+---
+title: "Classification"
+author: "Jingjing"
+date: "11/30/2017"
+output: html_document
+---
+BST 260 Final Project
+Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
+
+This Rmd file is for classification using KNN and logistic regression.
+```{r}
+library(dplyr)
+library(caret)
+library(ggplot2)
+train_set <- read.csv("train.csv")
+test_set <- read.csv("test.csv")
+dat <- read.csv("data_3_expo.csv")
+```
+
+
+## Logistic Regression (2 exposure,  )
+```{r}
+glm_fit <- train_set %>% 
+  mutate(y = as.numeric(mental_class == 1)) %>%
+  glm(y ~ income7 + employed + out_of_work + homemaker + student + hlthplan + exercise + smoke + drink + genhlth_fa + genhlth_po + qlactlm + pm2.5 + ozone + greenness, data=., family = "binomial")
+```
+
+obtain prediction using the predict function:
+
+```{r}
+p_hat_logit <- predict(glm_fit, newdata = test_set, type="response")
+```
+
+obtain predictions
+
+```{r}
+y_hat_logit <- ifelse(p_hat_logit > 0.5, 1, 0)
+
+confusionMatrix(data = y_hat_logit, reference = test_set$mental_class)
+```
+
+
+## KNN
+
+```{r}
+library(dslabs)
+accuracy <- c()
+for(x in 1:100){
+knn_fit <- knn3(mental_class~. ,data = na.omit(train_set), k=x)
+f_hat <- predict(knn_fit, newdata = na.omit(test_set))[,2]
+tab <- table(pred=round(f_hat), truth=na.omit(test_set)$mental_class)
+accuracy[x] <- confusionMatrix(tab)$overall["Accuracy"]
+}
+x <- 1:100
+ds_theme_set()
+data.frame(x, accuracy) %>% ggplot(aes(x, accuracy))+
+  xlab("k") +
+  geom_point(aes())+
+  geom_line()+
+  geom_vline(xintercept=x[which.max(accuracy)], col = "red")+
+  scale_x_continuous(breaks = c(seq(0, 100, 25), x[which.max(accuracy)]))
+```
+
+so, k=35
+
+```{r}
+f_hat <- predict(knn_fit, newdata = na.omit(test_set))[,2]
+tab <- table(pred=round(f_hat), truth=na.omit(test_set)$mental_class)
+confusionMatrix(tab)$overall["Accuracy"]
+f_hat_train <- predict(knn_fit, newdata = na.omit(train_set))[,2]
+tab <- table(pred=round(f_hat_train), truth=na.omit(train_set)$mental)
+confusionMatrix(tab)$overall["Accuracy"]
+```
