@@ -1,0 +1,151 @@
+---
+title: "Heart_disease_part"
+author: "Jingjing_Tang"
+date: "12/9/2017"
+output: html_document
+---
+BST 260 Final Project
+Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
+
+This Rmd file is for plotting heart diseases distribution by county level
+###Graph to show the spatial distribution
+heart disease map county level
+```{r}
+library(maps)
+library(ggplot2)
+library(ggmap)
+library(mapdata)
+library(RColorBrewer)
+data(county.fips)
+head(county.fips)
+cnty <- map_data("county")
+stt <- map_data("state")
+
+library(dplyr)
+dat <- read.csv("data_3_expo.csv")
+dat051<- read.csv("state_05.csv") %>% select(-full, -X)
+dat061<- read.csv("state_06.csv") %>% select(-full, -X)
+dat071<- read.csv("state_07.csv") %>% select(-full, -X)
+dat081<- read.csv("2008_data_state.csv") 
+dat091<- read.csv("2009_data_state.csv") 
+dat101<- read.csv("2010_data_state.csv") 
+dat_state_05_10 <- rbind (dat051, dat061, dat071, dat081,dat091,dat101)
+
+cnty2 <- cnty %>%
+  mutate(polyname = paste(region,subregion,sep=",")) %>%
+  left_join(county.fips, by="polyname")
+
+cnty2.df1 <- inner_join(cnty2, dat, by=c("fips") )
+
+state_code <- data.frame(state = c(1,2,4,5,6,8,9,10,11,12,13,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,44,45,46,47,48,49,50,51,53,54,55,56,66,72,78),
+                         region = c("alabama", "alaska", "arizona", "arkansas", "california", "colorado", "connecticut", "delaware", "district of columbia", "florida", "georgia", "hawaii", "idaho", "illinois", "indiana", "iowa", "kansas", "kentucky", "louisiana", "maine", "maryland", "massachusetts", "michigan", "minnesota", "mississippi", "missouri", "montana", "nebraska", "nevada", "new hampshire", "new jersey", "new mexico", "new york", "north carolina", "north dakota", "ohio", "oklahoma", "oregon", "pennsylvania", "rhode island", "south carolina", "south dakota", "tennessee", "texas","utah", "vermont", "virginia", "washington", "west virginia", "wisconsin", "wyoming", "guam", "peurto rico", "virgin islands"))
+
+stt2 <- stt %>%
+  left_join(state_code, by="region")
+
+stt2.df1 <- inner_join(stt2, dat_state_05_10, by=c("state") )
+```
+
+
+(currently don't use it)
+#####county level
+p1 <- ggplot(cnty2.df1, aes(long, lat,group = group)) + 
+  geom_polygon(aes(fill = heartattack), colour = rgb(1,1,1,0.2))  +
+  coord_quickmap()+
+  facet_wrap(~year)
+
+p2 <- ggplot(cnty2.df1, aes(long, lat,group = group)) + 
+  geom_polygon(aes(fill = ACheartdis), colour = rgb(1,1,1,0.2))  +
+  coord_quickmap()+
+  facet_wrap(~year)
+
+p3 <- ggplot(cnty2.df1, aes(long, lat,group = group)) + 
+  geom_polygon(aes(fill = stroke), colour = rgb(1,1,1,0.2))  +
+  coord_quickmap()+
+  facet_wrap(~year)
+
+
+```{r}
+
+#####state level 
+ggplot(stt2.df1, aes(long, lat,group = group)) + 
+  geom_polygon(aes(fill = heartattack))  + coord_quickmap() +
+  scale_x_continuous(expand=c(0,0)) +
+  scale_fill_gradientn(colors = brewer.pal(9, "PuBu"), trans = "sqrt") +
+  facet_wrap(~year) +
+  ggtitle("The proportion of people ever diagnosed with heart attack in US states from 2005 to 2010")
+
+ggplot(stt2.df1, aes(long, lat,group = group)) + 
+  geom_polygon(aes(fill = ACheartdis))  + coord_quickmap() +
+  scale_x_continuous(expand=c(0,0)) +
+  scale_fill_gradientn(colors = brewer.pal(9, "PuBu"), trans = "sqrt") +
+  facet_wrap(~year) +
+  ggtitle("The proportion of people ever diagnosed with angina or coronary heart disease in US states from 2005 to 2010")
+
+
+ggplot(stt2.df1, aes(long, lat,group = group)) + 
+  geom_polygon(aes(fill = stroke))  + coord_quickmap() +
+  scale_x_continuous(expand=c(0,0)) +
+  scale_fill_gradientn(colors = brewer.pal(9, "PuBu"), trans = "sqrt") +
+  facet_wrap(~year) +
+  ggtitle("The proportion of people ever diagnosed with stroke in US states from 2005 to 2010") 
+
+```
+
+## Paletts
+
+```{r}
+library(RColorBrewer)
+library(dplyr)
+dat_state_05_10 %>%
+  left_join(state_code, by="state") %>%
+  group_by(year,region) %>%
+  filter(!is.na(heartattack)) %>%
+  summarize(heartattack = mean(heartattack)) %>%
+    ggplot(aes(x = year, y = region,  fill = heartattack)) +
+    geom_tile(color = "grey50") +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_fill_gradientn("Cases per\n100,000", 
+                         colors = brewer.pal(9, "Reds"), 
+                         trans = "sqrt") +
+    theme_minimal() +  
+    theme(panel.grid = element_blank()) +
+    ggtitle("The proportion of people ever diagnosed with heart attack in US states from 2005 to 2010") + 
+    ylab("") + xlab("") 
+```
+
+```{r}
+dat_state_05_10 %>%
+  left_join(state_code, by="state") %>%
+  group_by(year,region) %>%
+  filter(!is.na(ACheartdis)) %>%
+  summarize(ACheartdis = mean(ACheartdis)) %>%
+    ggplot(aes(x = year, y = region,  fill = ACheartdis)) +
+    geom_tile(color = "grey50") +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_fill_gradientn("Cases per\n100,000", 
+                         colors = brewer.pal(9, "Reds"), 
+                         trans = "sqrt") +
+    theme_minimal() +  
+    theme(panel.grid = element_blank()) +
+    ggtitle("The proportion of people ever diagnosed with angina or coronary heart disease in US states from 2005 to 2010") + 
+    ylab("") + xlab("") 
+```
+
+```{r}
+dat_state_05_10 %>%
+  left_join(state_code, by="state") %>%
+  group_by(year,region) %>%
+  filter(!is.na(stroke)) %>%
+  summarize(stroke = mean(stroke)) %>%
+    ggplot(aes(x = year, y = region,  fill = stroke)) +
+    geom_tile(color = "grey50") +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_fill_gradientn("Cases per\n100,000", 
+                         colors = brewer.pal(9, "Reds"), 
+                         trans = "sqrt") +
+    theme_minimal() +  
+    theme(panel.grid = element_blank()) +
+    ggtitle("The proportion of people ever diagnosed with stroke in US states from 2005 to 2010") + 
+    ylab("") + xlab("") 
+```
