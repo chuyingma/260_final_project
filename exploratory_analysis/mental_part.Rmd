@@ -1,19 +1,23 @@
 ---
-title: "mental health"
+title: "Visualization -- Part 1. Mental Health"
 author: "Chuying Ma"
 date: "11/26/2017"
 output: html_document
 ---
 
-BST 260 Final Project
-Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
+##BST 260 Final Project
+##Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
 
-This Rmd file is for studying the relationship between other variables and mental health:
+This Rmd file is for studying the relationship between other variables including environmental exposures, socioeconomic variables and mental health.
+
+But it also involve some related data cleaning steps for better exploration.
 
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+###Part 1. map 
 
 Mental health patterns in 2000 for all US counties in a map:
 
@@ -44,7 +48,7 @@ map_00 = ggplot(men_df_00, aes(long, lat,group = group)) +
 map_00
 ```
 
-mental health patterns in 2001 for all US counties in a map:
+Mental health patterns in 2001 for all US counties in a map:
 
 ```{r}
 data_2001 = read.csv("data_2001.csv")
@@ -66,7 +70,7 @@ map_01 = ggplot(men_df_01, aes(long, lat,group = group)) +
 map_01
 ```
 
-mental health patterns in 2002 for all US counties in a map:
+Mental health patterns in 2002 for all US counties in a map:
 
 ```{r}
 data_2002 = read.csv("data_2002.csv")
@@ -88,7 +92,7 @@ map_02 = ggplot(men_df_02, aes(long, lat,group = group)) +
 map_02
 ```
 
-mental health patterns in 2003 for all US counties in a map:
+Mental health patterns in 2003 for all US counties in a map:
 
 ```{r}
 data_2003 = read.csv("data_2003.csv")
@@ -110,7 +114,7 @@ map_03 = ggplot(men_df_03, aes(long, lat,group = group)) +
 map_03
 ```
 
-mental health patterns in 2004 for all US counties in a map:
+Mental health patterns in 2004 for all US counties in a map:
 
 ```{r}
 data_2004 = read.csv("data_2004.csv")
@@ -132,7 +136,7 @@ map_04 = ggplot(men_df_04, aes(long, lat,group = group)) +
 map_04
 ```
 
-mental health patterns in 2005 for all US counties in a map:
+Mental health patterns in 2005 for all US counties in a map:
 
 ```{r}
 data_2005 = read.csv("data_2005.csv")
@@ -154,7 +158,7 @@ map_05 = ggplot(men_df_05, aes(long, lat,group = group)) +
 map_05
 ```
 
-mental health patterns in 2006 for all US counties in a map:
+Mental health patterns in 2006 for all US counties in a map:
 
 ```{r}
 data_2006 = read.csv("data_2006.csv")
@@ -176,7 +180,7 @@ map_06 = ggplot(men_df_06, aes(long, lat,group = group)) +
 map_06
 ```
 
-mental health patterns in 2007 for all US counties in a map:
+Mental health patterns in 2007 for all US counties in a map:
 
 ```{r}
 data_2007 = read.csv("data_2007.csv")
@@ -198,7 +202,7 @@ map_07 = ggplot(men_df_07, aes(long, lat,group = group)) +
 map_07
 ```
 
-mental health patterns in 2008 for all US counties in a map:
+Mental health patterns in 2008 for all US counties in a map:
 
 ```{r}
 data_2008 = read.csv("2008_data.csv")
@@ -220,7 +224,7 @@ map_08 = ggplot(men_df_08, aes(long, lat,group = group)) +
 map_08
 ```
 
-mental health patterns in 2009 for all US counties in a map:
+Mental health patterns in 2009 for all US counties in a map:
 
 ```{r}
 data_2009 = read.csv("2009_data.csv")
@@ -242,7 +246,7 @@ map_09 = ggplot(men_df_09, aes(long, lat,group = group)) +
 map_09
 ```
 
-mental health patterns in 2010 for all US counties in a map:
+Mental health patterns in 2010 for all US counties in a map:
 
 ```{r}
 data_2010 = read.csv("2010_data.csv")
@@ -265,7 +269,7 @@ map_10
 ```
 
 
-map in the same plot using facet:
+Map from different years in the same plot using facet:
 
 ```{r,eval=FALSE}
 mental_data = data.frame()
@@ -301,16 +305,12 @@ map_all_year = ggplot(men_df, aes(long, lat,group = group)) +
 map_all_year
 ```
 
-##conclusions
 
-Are you living in the states where people are more unhappier? Be careful if you live at Kentucky, West Virginia or Puerto Rico! In those states, people who had assess to the BRFSS survey reported that they spent more than half of their days in a month in a bad mental health conditions.
+###Part 2. write state level data
 
-Do you think people become unhappier than before at state level? The answer is probably yes as the color tends to be darker year by year.
+Write state level data for exposure, which is for exploring the relationship between environmental exposures and mental health:
 
-
-write state level data for exposure:
-
-combine with pm2.5 and ozone:
+combine with pm2.5 and ozone, and save those in csv files for different years:
 ```{r,eval=FALSE}
 pm2.5 = read_csv("PM25_Ozone_county_2000_2012.csv")
 pm2.5$COUNTY = as.numeric(pm2.5$COUNTY)
@@ -441,7 +441,13 @@ all_expo = rbind(data_2000,data_2001,data_2002,data_2003,data_2004,data_2005,dat
 write_csv(all_expo,"data_exposure_00_10.csv")
 ```
 
-run linear regression for all covariates:
+
+###Part 3. Linear regression
+
+run linear regression for predicting mental health condition with all covariates
+
+backward selection are used here
+
 ```{r}
 library(readr)
 library(dplyr)
@@ -571,17 +577,12 @@ summary(mod20)
 ```
 
 
-
-this is the final regression model considering the relationship:
-
-if we delete ozone:
-```{r}
-mod17 = lm(menthlth ~ black + educ2 + income1 + income4 + married + employed + out_of_work + homemaker + student + hlthplan + smoke + drink + genhlth_ex + genhlth_fa + genhlth_po + qlactlm + pm2.5,data = reg_data)
-summary(mod17)
-```
+This is the final regression model considering the relationship
 
 
-aggregate into state level:
+###Part 4. Map for state level data
+
+aggregate data into state level:
 ```{r}
 st.codes<-data.frame(
   state=c(1,2,4,5,6,8,9,10,11,12,13,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,44,45,46,47,48,49,50,51,53,54,55,56,72),full=c("alabama","alaska","arizona","arkansas","california","colorado","connecticut","delaware","district of columbia","florida","georgia","hawaii","idaho","illinois","indiana","iowa","kansas","kentucky","louisiana","maine","maryland","massachusetts","michigan","minnesota","mississippi","missouri","montana", "nebraska","nevada","new hampshire","new jersey","new mexico","new york","north carolina","north dakota","ohio","oklahoma","oregon","pennsylvania","rhode island","south carolina","south dakota","tennessee","texas","utah","vermont","virginia","washington","west virginia","wisconsin","wyoming","puerto rico"))
@@ -599,7 +600,7 @@ data <- data_00 %>% mutate(fips=X.STATE * 1000 + CTYCODE) %>%
   select(X.STATE,CTYCODE,IMONTH,MENTHLTH,CVDINFAR,CVDCORHD,CVDSTROK,ASTHMA,AGE,SEX,ORACE,EDUCA,INCOME2,MARITAL,EMPLOY,HLTHPLAN,EXERANY,X.RFSMOK2,DRINKANY,X.BMI2CAT,X.BMI2,GENHLTH,QLACTLMT)
 ```
 
-NA
+deal with NA values
 ```{r,eval=FALSE}
 data$CTYCODE[data$CTYCODE %in% c(777,999)] <- c(NA)
 data$MENTHLTH[data$MENTHLTH %in% c(77,88,99)] <- c(NA) 
@@ -624,7 +625,7 @@ data$QLACTLM2[data$QLACTLMT %in% c(7,9)] <- c(NA)
 ```
 
 
-SELECT
+SELECT variables from raw data
 ```{r,eval=FALSE}
 data00 <-data %>% group_by(X.STATE) %>%
          dplyr::summarise(year = 2000,
@@ -683,6 +684,7 @@ data00 = data00 %>%
 write.csv(data00, file = "state_00.csv")
 ```
 
+
 Mental health patterns in 2000 for all US states in a map:
 
 ```{r}
@@ -712,6 +714,7 @@ ggplot(state_00,aes(map_id = full)) +
   xlab("")
 
 ```
+
 
 Select average menthlth for each state across years
 and write it into a csv file,
@@ -949,6 +952,34 @@ ggplot(state_map,aes(map_id = full)) +
 ```
 
 
+heatmap for menthlth across US states from 2000 to 2010:
+
+```{r,warning=FALSE}
+library(RColorBrewer)
+
+men_state = read_csv("state_menthlth.csv")
+men_state %>% filter(!is.na(menthlth) & !is.na(full)) %>% 
+  ggplot(aes(x = year, y = full,fill = menthlth)) + 
+  geom_tile(color = "grey50") +
+  scale_x_continuous(expand=c(0,0)) +  
+  scale_fill_gradientn(colors = brewer.pal(9, "YlOrRd"), trans = "sqrt") +
+  ylab("state") + 
+  xlab("year") +
+  ggtitle("Heatmap of average menthlth in US states from 2000 to 2010")
+```
+
+
+##Conclusion:
+Individuals answered the same question that "Now thinking about your mental health, which includes stress, depression, and problems with emotions, for how many days during the past 30 days was your mental health not good? " for any BRFSS survey year. Can you imagine which counties or states are the ones with worst average self-reported mental health condition?
+
+Are you living in the states where people are more unhappier? Be careful if you live at Kentucky, West Virginia or Puerto Rico! In those states, people who had assess to the BRFSS survey reported that they spent more than half of their days in a month in a bad mental health conditions.
+
+Do you think people become unhappier than before at state level? The answer is probably yes as the color tends to be darker year by year.
+
+
+
+###Part 5. Univariate analysis
+
 Run regression for different years and get a univariate plot each year:
 
 ```{r,warning=FALSE}
@@ -989,29 +1020,16 @@ data_all %>%
   filter(!grepl("Intercept", term))
 ```
 
-heatmap for menthlth across US states from 2000 to 2010:
 
-```{r,warning=FALSE}
-library(RColorBrewer)
+##Conclusion
 
-men_state = read_csv("state_menthlth.csv")
-men_state %>% filter(!is.na(menthlth) & !is.na(full)) %>% 
-  ggplot(aes(x = year, y = full,fill = menthlth)) + 
-  geom_tile(color = "grey50") +
-  scale_x_continuous(expand=c(0,0)) +  
-  scale_fill_gradientn(colors = brewer.pal(9, "YlOrRd"), trans = "sqrt") +
-  ylab("state") + 
-  xlab("year") +
-  ggtitle("Heatmap of average menthlth in US states from 2000 to 2010")
-```
-
-##conclusion
-
-As the year increases from 2000 to 2010, it shows that quite a few counties in the south part of U.S. have the worst average mental health condition.
+Mental health condition and pm 2.5, ozone are positively correlated
 
 
-deal with raw ndvi data and study the relationship between greenness and menthlth:
 
+###Part 6. Write full dataset with all 3 environmental exposures
+
+Deal with raw ndvi data and study the relationship between greenness and menthlth:
 ```{r,eval=FALSE}
 data_all = read_csv("data_exposure_00_10.csv")
 
@@ -1025,64 +1043,9 @@ data_all = data_all %>%
 write_csv(data_all,"data_3_expo.csv")
 ```
 
-```{r,warning=FALSE}
-data_all = read_csv("~/Desktop/Harvard/fall 2017/bst260/project/data_3_expo.csv")
-group_men_fit2 = data_all %>%
-  dplyr::select(-c(fips,state,county)) %>%
-  ggplot(aes(menthlth,greenness)) +
-  geom_point() +
-  geom_smooth(method = "lm") +
-  facet_wrap(~ year)
-group_men_fit2
-```
-
-Univariate analysis for income vs asthma:
-
-```{r,warning=FALSE}
-library(readr)
-library(dplyr)
-library(tidyverse)
-library(broom)
-library(dslabs)
-ds_theme_set()
-data_all = read_csv("data_exposure_00_10.csv")
-
-group_as_fit = data_all %>%
-  dplyr::select(-c(fips,state,county)) %>%
-  ggplot(aes(income1,asthma)) +
-  geom_point(alpha = 0.2,col = "darkorchid2") +
-  geom_smooth(method = "lm",col = "black") +
-  facet_wrap(~ year) +
-  ggtitle("income1 vs asthma") +
-  xlim(0,0.75) +
-  ylim(0,0.5)
-group_as_fit
-```
 
 
-Univariate analysis for heartattack vs smoke:
-
-```{r,warning=FALSE}
-library(readr)
-library(dplyr)
-library(tidyverse)
-library(broom)
-library(dslabs)
-ds_theme_set()
-data_all = read_csv("data_exposure_00_10.csv")
-
-group_he_fit = data_all %>%
-  filter(year %in% c(2005,2006,2007,2008,2009,2010)) %>%
-  dplyr::select(-c(fips,state,county)) %>%
-  ggplot(aes(smoke,heartattack)) +
-  geom_point(alpha = 0.2,col = "indianred1") +
-  geom_smooth(method = "lm",col = "black") +
-  facet_wrap(~ year) +
-  ggtitle("smoke vs heartattack") +
-  xlim(0,0.6) + 
-  ylim(0,0.5)
-group_he_fit
-```
+###Part 7. check the colinearity via correlation map
 
 Draw the Pearson correlation map:
 
@@ -1188,8 +1151,11 @@ theme(
                 title.position = "top", title.hjust = 0.5))
 ```
 
-Considering the possibility of colinearity, we also checked the correlation map to see if there are possible pairs that have high correlation. It turns out that it is fine!
+##Conclusion
+Considering the possibility of colinearity, we also checked the correlation map to see if there are possible pairs that have high correlation. It turns out that it is fine and we don't need worry about it for our linear model!
 
+
+###Part 8. Plot fitted values for linear regression vs actual values
 
 try to draw the fitted line vs actual value in 2010:
 firstly I want to label each state but it turns out there are too much so I give up
@@ -1229,7 +1195,7 @@ data_all_10 %>%
 
 
 
-##conclusions
+##Conclusions
 
 Take the year 2010 for an example, we drew a plot of actual "menthlth" values and fitted "menthlth" values, where the color represents different states in the U.S., and we could conclude that the points are roughly follow the fitted line as expected.
 
