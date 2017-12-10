@@ -385,6 +385,11 @@ lines(roc_knn, col = "chartreuse1")
 legend(0.4,0.5,c("Random Forest","QDA","LDA","LG","KNN"),col=c("brown1","blue1","darkgoldenrod","darkorchid","chartreuse1"),lty=1)
 ```
 
+##conclusions for the classification
+
+As can be seen from the combined ROC curves and the table above, all those five techniques perform relatively similar. However, we are more willing to detect potential mental problems as more sensitive as possible. Under this consideration, larger AUC is better. So, Random Forest (RF) is slightly better than other approaches.
+
+
 try to use regression tree for regression:
 
 ```{r}
