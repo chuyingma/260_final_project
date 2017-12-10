@@ -298,58 +298,6 @@ So why people what to drink? Do you think people tend to immersed in sadness and
 
 
 #plot for missing data
-
-colnames(dat)
-length(colnames(dat))
-missing <- data.frame(disease = rep(c("menthlth", "heartattack", "ACheartdis", "stroke", "asthma"),each = 50), )
-
-missing_menthlth <- dat %>% filter(menthlth != "NA") %>% 
-  summarise(age = sum(which(age != "NA")), 
-            sex = sum(which(sex != "NA")),
-            white = sum(which(white != "NA")),
-            black = sum(which(black != "NA")),
-            asian = sum(which(asian != "NA")),
-            race_other = sum(which(race_other != "NA")),
-            educ1 = sum(which(educ1 != "NA")),
-            educ2 = sum(which(educ2 != "NA")),
-            educ3 = sum(which(educ3 != "NA")),
-            income1 = sum(which(income1 != "NA")),
-            income2 = sum(which(income2 != "NA")),
-            income3 = sum(which(income3 != "NA")),
-            income4 = sum(which(income4 != "NA")),
-            income5 = sum(which(income5 != "NA")),
-            income6 = sum(which(income6 != "NA")),
-            income7 = sum(which(income7 != "NA")),
-            income8 = sum(which(income8 != "NA")),
-            married = sum(which(married != "NA")),
-            unmarried = sum(which(unmarried != "NA")),
-            employed = sum(which(employed != "NA")),
-            out_of_work = sum(which(out_of_work != "NA")),
-            homemaker = sum(which(homemaker != "NA")),
-            student = sum(which(student != "NA")),
-            employ_other = sum(which(employ_other != "NA")),
-            hlthplan = sum(which(hlthplan != "NA")),
-            exercise = sum(which(exercise != "NA")),
-            smoke = sum(which(smoke != "NA")),
-            drink = sum(which(drink != "NA")),
-            bmi_cat1 = sum(which(bmi_cat1 != "NA")),
-            bmi_cat2 = sum(which(bmi_cat2 != "NA")),
-            bmi_cat3 = sum(which(bmi_cat3 != "NA")),
-            bmi_cts = sum(which(bmi_cts != "NA")),
-            genhlth_ex = sum(which(genhlth_ex != "NA")),
-            genhlth_vg = sum(which(genhlth_vg != "NA")),
-            gentlth_go = sum(which(genhlth_go != "NA")),
-            genhlth_fa = sum(which(genhlth_fa != "NA")),
-            genhlth_po = sum(which(genhlth_po != "NA")),
-            qlactlm = sum(which(qlactlm != "NA")),
-            pm2.5 = sum(which(pm2.5 != "NA")),
-            ozone = sum(which(ozone != "NA")),
-            greenness = sum(which(greenness != "NA")))
-            
-                        
-
-
-
 ```{r}
 library(dplyr)
 library(wakefield)
@@ -357,3 +305,5 @@ library(Amelia)
 missmap(dat, main = "Missingness Map", col = c("white", "darkgreen"), rank.order = TRUE)
 ```
 
+This missingness map shows where missingness occurs in the dataset.  The order of the variables along the the x-axis is sorted by the percent missing. As shown in the plot, there are two many missing information in terms of heart attack, angina or coronary heart disease and stroke. Relatively, if we want to continue our analysis using regression or classification methods, menthlth and asthma should be better choices. 
+As for our group, we are more interested in what socioeconomic featrures and environmental exposures would impact people's mental status and what are their large are their influence respectively.
