@@ -348,3 +348,7 @@ gr_fit18 = lm(menthlth ~ black + educ2 + income1 + income4  + married + employed
 summary(gr_fit18)
 ```
 
+
+##conclusion
+
+Taking mental health as example, multiple regression was applied to address the impact of environmental exposures adjusting for other socioeconomic factors, which shows a significant relationship between mental health and other environmental exposures and socioeconomic variables
