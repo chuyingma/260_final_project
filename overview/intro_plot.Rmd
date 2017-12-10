@@ -1,0 +1,48 @@
+---
+title: "Intro_plot"
+author: "Jingjing_Tang"
+date: "12/9/2017"
+output: html_document
+---
+
+
+BST 260 Final Project
+Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
+
+This Rmd file is for introduction plot.
+
+###Graph to introduce all the variables
+```{r}
+library(packcircles)
+library(ggplot2)
+ 
+# Create data
+data=data.frame(group=c("state", "county","year", "mental health", "heart attack","Angina/Coronary heartdis", "stroke", "asthma", "age", "sex", "race", "education", "income", "marital status", "employment status", "health plan", "exercise", "smoke", "drink", "BMI", "general health", "activity limitation"), value=sample(seq(5, 20, 0.2),22,  replace = TRUE)) 
+ 
+# Generate the layout. This function return a dataframe with one line per bubble. 
+# It gives its center (x and y) and its radius, proportional of the value
+packing <- circleProgressiveLayout(data$value, sizetype='area')
+ 
+# We can add these packing information to the initial data frame
+data = cbind(data, packing)
+
+ 
+# The next step is to go from one center + a radius to the coordinates of a circle that
+# is drawn by a multitude of straight lines.
+dat.gg <- circleLayoutVertices(packing, npoints=50)
+ 
+# Make the plot
+ggplot() + 
+  
+  # Make the bubbles
+  geom_polygon(data = dat.gg, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  
+  # Add text in the center of each bubble + control its size
+  geom_text(data = data, aes(x, y, size=value, label = group)) +
+  scale_size_continuous(range = c(2,4)) +
+  
+  # General theme:
+  theme_void() + 
+  theme(legend.position="none") +
+  coord_equal()
+```
