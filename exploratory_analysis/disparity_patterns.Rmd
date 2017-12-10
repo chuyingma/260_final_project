@@ -115,8 +115,18 @@ summary(fit)
 ```
 
 
+##conclusion
+
+In our dataset, there are three main social economics factors: race, income and education. We want to explore the association between PM 2.5 and these three factors. In order to reduce bias, we condition on these factors and see in each strata, the effect of PM 2.5 on these factors.
 
 
+PM2.5 disparity among race: in the black strata at county level, the PM2.5 exposure is positively associated with the percentage of people. However, in the white strata, the PM2.5 is negatively associated with the percentage of people.
+
+
+PM2.5 disparity among different income level: in low income strata (income1~income3) at county level, the PM2.5 exposure is positively associated with the percentage of people. However, in most of the middle and high income strata, the PM2.5 exposure is negatively associated with the percentage of people.
+
+
+PM2.5 disparity among different education level: in below high school (edu1) and high school strata (educ2) at county level, the pm2.5 exposure is positively associated with the percentage of people. However, in college and beyond strata (educ3), the PM2.5 exposure is negatively associated with the percentage of people.
 
 
 
