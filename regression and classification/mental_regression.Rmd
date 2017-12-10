@@ -1,14 +1,19 @@
 ---
-title: "Mental_part2"
+title: "Regression -- Mental health regression vs pm 2.5, greenness"
 author: "Chuying Ma"
 date: "11/28/2017"
 output: html_document
 ---
 
-BST 260 Final Project
-Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
+##BST 260 Final Project
+##Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
 
 This Rmd file is for conducting linear regression for menthlth and other covariates.
+
+Due to the fact that there were less missing data in the outcome 'menthlth', we focused on the condition of mental health in the following multivariate analysis and classification section.
+
+Actually this part is not shown on our website for our final analysis, but for us it is a nice try to study the relationship between pm 2.5, greenness and mental health
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -20,12 +25,15 @@ library(dplyr)
 library(tidyverse)
 ```
 
-look for regression with pm 2.5, using backward selection and choose p = 0.05 as criteria:
+##Part 1.
+
+Look for regression with pm 2.5, using backward selection and choose p = 0.05 as criteria via backward selection:
 ```{r}
 data_all = read_csv("data_3_expo.csv")
 reg_data = data_all %>%
   dplyr::select(-c(fips,state,state,year))
 ```
+
 
 ```{r}
 pm_fit1 = lm(menthlth ~ .,data = reg_data)
@@ -126,7 +134,11 @@ pm_fit17 = lm(lm(menthlth ~ black + educ2 + income1 + income4 + married + employ
 summary(pm_fit17)
 ```
 
-look for regression with ozone, using backward selection and p = 0.05 as criteria:
+
+##Part 2.
+
+look for regression with ozone, using backward selection and p = 0.05 as criteria via backward selection:
+
 ```{r}
 reg_data = data_all %>%
   select(-c(fips,state,county,year,heartattack,ACheartdis,stroke,asthma,pm2.5,greenness))

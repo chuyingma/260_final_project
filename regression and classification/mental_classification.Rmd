@@ -1,20 +1,21 @@
 ---
-title: "mental_advanced"
+title: "Classification -- combine all approaches and comparison"
 author: "Chuying Ma"
 date: "11/27/2017"
 output: html_document
 ---
 
-BST 260 Final Project
-Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
+##BST 260 Final Project
+##Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
 
-We studied our county level data from year 2000 to 2010 using classification approaches such as Logistic Regression (Logit. Reg.), K-nearest Neighbors (KNN), Linear Discriminant Analysis (LDA), Quadratic Discriminant Analysis (QDA) and Random Forest (RF) based on 16 chosen features.
+We studied our county level data from year 2000 to 2010 using classification approaches such as Logistic Regression (Logit. Reg.), K-nearest Neighbors (KNN), Linear Discriminant Analysis (LDA), Quadratic Discriminant Analysis (QDA) and Random Forest (RF) based on 16 chosen features. And we want to compare their performance in the end
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-try advanced techniques for classification:
+
 ```{r}
 library(ggplot2)
 library(readr)
@@ -27,7 +28,7 @@ library(dslabs)
 ds_theme_set()
 ```
 
-classification:
+##Part 1. exploration and dividing classes
 
 exploratory analysis for different classes:
 ```{r,warning=FALSE}
@@ -153,7 +154,8 @@ text(fit1)
 
 ```
 
-try Random Forest
+##Part 2. Random Forest
+
 ```{r}
 library(randomForest)
 train_dat_com = train_dat[complete.cases(train_dat),]
@@ -230,6 +232,7 @@ for(i in 1:20) {
 }
 ```
 
+I decided to use nodesize = 15, mtry=5:
 
 ```{r}
 set.seed(1)
@@ -247,8 +250,11 @@ pred <- predict(fit2, newdata = test_dat_com,type = "prob")
 
 
 tree.prob = pred[,2]
-#accuracy 0.756371 
 ```
+
+##Conclusion
+the accracy rate is 0.7564, which is very close to LDA
+
 
 In order to find the important variables in the random forest:
 
@@ -270,7 +276,11 @@ tmp %>%
   ggtitle("mean feature importances for random forest classifer")
 ```
 
+##Conclusion
+The plot of mean feature importances indicate that genhlth_po, drink, exercise are the top 3 important features for these classifiers to predict which category the average number of days mental health not good during the past 30 days falls. 
 
+
+##Part 3. Comparison among approaches
 
 try to use lda and qda for classification:
 ```{r}
@@ -305,7 +315,7 @@ qda.prob = qda.pred$posterior[,1]
 #0.7319062 
 ```
 
-## Logistic Regression (2 exposure)
+Logistic Regression (2 exposure)
 ```{r}
 glm_fit <- train_dat_com %>% 
   mutate(y = as.numeric(mental_class == 1)) %>%
@@ -326,7 +336,9 @@ confusionMatrix(data = y_hat_logit, reference = test_dat_com$mental_class)
 #0.7528 
 ```
 
-## KNN
+
+
+KNN
 
 ```{r,eval=FALSE}
 accuracy <- c()
@@ -350,12 +362,10 @@ knn_fit <- knn3(mental_class~. ,data = na.omit(train_dat_com), k=35)
 f_hat <- predict(knn_fit, newdata = na.omit(test_dat_com))[,2]
 tab <- table(pred=round(f_hat), truth=na.omit(test_dat_com)$mental_class)
 confusionMatrix(tab)$overall["Accuracy"]
-
-#0.7415902 
 ```
 
 
-draw the ROC curve:
+Draw the ROC curve to compare:
 
 ```{r}
 
@@ -385,20 +395,9 @@ lines(roc_knn, col = "chartreuse1")
 legend(0.4,0.5,c("Random Forest","QDA","LDA","LG","KNN"),col=c("brown1","blue1","darkgoldenrod","darkorchid","chartreuse1"),lty=1)
 ```
 
-##conclusions for the classification
+##Conclusions for the classification
 
 As can be seen from the combined ROC curves and the table above, all those five techniques perform relatively similar. However, we are more willing to detect potential mental problems as more sensitive as possible. Under this consideration, larger AUC is better. So, Random Forest (RF) is slightly better than other approaches.
 
 
-try to use regression tree for regression:
-
-```{r}
-library(tree)
-data_all = read_csv("data_3_expo.csv")
-data_tree = data_all %>%
-  dplyr::select(income7,employed,out_of_work,homemaker,student,hlthplan,exercise,smoke,drink, genhlth_fa,genhlth_po,qlactlm,pm2.5,ozone,greenness,menthlth)
-fit_tree <- tree(menthlth ~ ., data = data_tree)
-plot(fit_tree)
-text(fit_tree, cex = 0.5)
-```
 
