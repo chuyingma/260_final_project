@@ -10,3 +10,5 @@
 #here is the link for Google drive:
 
 #https://drive.google.com/drive/folders/1FF6n2uUJTZfwq9mF1r96ag1t3TDFXop_?usp=sharing
+
+#This repository contains our rmd files and html files which show our approaches to deal with the research questions, if you want to learn more about our findings and conclusions, please refer to our website!
