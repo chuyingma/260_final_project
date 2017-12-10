@@ -1,5 +1,5 @@
 ---
-title: "Overview"
+title: "Introduction to project"
 author: "Jie Yin, Jingjing Tang, Chuying Ma, Xuewei Zhang"
 date: "12/8/2017"
 output: html_document
