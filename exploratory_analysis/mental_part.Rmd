@@ -301,6 +301,13 @@ map_all_year = ggplot(men_df, aes(long, lat,group = group)) +
 map_all_year
 ```
 
+##conclusions
+
+Are you living in the states where people are more unhappier? Be careful if you live at Kentucky, West Virginia or Puerto Rico! In those states, people who had assess to the BRFSS survey reported that they spent more than half of their days in a month in a bad mental health conditions.
+
+Do you think people become unhappier than before at state level? The answer is probably yes as the color tends to be darker year by year.
+
+
 write state level data for exposure:
 
 combine with pm2.5 and ozone:
@@ -998,6 +1005,11 @@ men_state %>% filter(!is.na(menthlth) & !is.na(full)) %>%
   ggtitle("Heatmap of average menthlth in US states from 2000 to 2010")
 ```
 
+##conclusion
+
+As the year increases from 2000 to 2010, it shows that quite a few counties in the south part of U.S. have the worst average mental health condition.
+
+
 deal with raw ndvi data and study the relationship between greenness and menthlth:
 
 ```{r,eval=FALSE}
@@ -1024,6 +1036,53 @@ group_men_fit2 = data_all %>%
 group_men_fit2
 ```
 
+Univariate analysis for income vs asthma:
+
+```{r,warning=FALSE}
+library(readr)
+library(dplyr)
+library(tidyverse)
+library(broom)
+library(dslabs)
+ds_theme_set()
+data_all = read_csv("data_exposure_00_10.csv")
+
+group_as_fit = data_all %>%
+  dplyr::select(-c(fips,state,county)) %>%
+  ggplot(aes(income1,asthma)) +
+  geom_point(alpha = 0.2,col = "darkorchid2") +
+  geom_smooth(method = "lm",col = "black") +
+  facet_wrap(~ year) +
+  ggtitle("income1 vs asthma") +
+  xlim(0,0.75) +
+  ylim(0,0.5)
+group_as_fit
+```
+
+
+Univariate analysis for heartattack vs smoke:
+
+```{r,warning=FALSE}
+library(readr)
+library(dplyr)
+library(tidyverse)
+library(broom)
+library(dslabs)
+ds_theme_set()
+data_all = read_csv("data_exposure_00_10.csv")
+
+group_he_fit = data_all %>%
+  filter(year %in% c(2005,2006,2007,2008,2009,2010)) %>%
+  dplyr::select(-c(fips,state,county)) %>%
+  ggplot(aes(smoke,heartattack)) +
+  geom_point(alpha = 0.2,col = "indianred1") +
+  geom_smooth(method = "lm",col = "black") +
+  facet_wrap(~ year) +
+  ggtitle("smoke vs heartattack") +
+  xlim(0,0.6) + 
+  ylim(0,0.5)
+group_he_fit
+```
 
 Draw the Pearson correlation map:
 
@@ -1129,6 +1188,9 @@ theme(
                 title.position = "top", title.hjust = 0.5))
 ```
 
+Considering the possibility of colinearity, we also checked the correlation map to see if there are possible pairs that have high correlation. It turns out that it is fine!
+
+
 try to draw the fitted line vs actual value in 2010:
 firstly I want to label each state but it turns out there are too much so I give up
 
@@ -1165,52 +1227,11 @@ data_all_10 %>%
 
 ```
 
-Univariate analysis for income vs asthma:
 
-```{r,warning=FALSE}
-library(readr)
-library(dplyr)
-library(tidyverse)
-library(broom)
-library(dslabs)
-ds_theme_set()
-data_all = read_csv("data_exposure_00_10.csv")
 
-group_as_fit = data_all %>%
-  dplyr::select(-c(fips,state,county)) %>%
-  ggplot(aes(income1,asthma)) +
-  geom_point(alpha = 0.2,col = "darkorchid2") +
-  geom_smooth(method = "lm",col = "black") +
-  facet_wrap(~ year) +
-  ggtitle("income1 vs asthma") +
-  xlim(0,0.75) +
-  ylim(0,0.5)
-group_as_fit
-```
+##conclusions
 
-Univariate analysis for heartattack vs smoke:
-
-```{r,warning=FALSE}
-library(readr)
-library(dplyr)
-library(tidyverse)
-library(broom)
-library(dslabs)
-ds_theme_set()
-data_all = read_csv("data_exposure_00_10.csv")
-
-group_he_fit = data_all %>%
-  filter(year %in% c(2005,2006,2007,2008,2009,2010)) %>%
-  dplyr::select(-c(fips,state,county)) %>%
-  ggplot(aes(smoke,heartattack)) +
-  geom_point(alpha = 0.2,col = "indianred1") +
-  geom_smooth(method = "lm",col = "black") +
-  facet_wrap(~ year) +
-  ggtitle("smoke vs heartattack") +
-  xlim(0,0.6) + 
-  ylim(0,0.5)
-group_he_fit
-```
+Take the year 2010 for an example, we drew a plot of actual "menthlth" values and fitted "menthlth" values, where the color represents different states in the U.S., and we could conclude that the points are roughly follow the fitted line as expected.
 
 
 
