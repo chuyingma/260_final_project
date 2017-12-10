@@ -1,0 +1,359 @@
+---
+title: "Visualization Graphs"
+author: "Jingjing_Tang"
+date: "11/27/2017"
+output: html_document
+---
+
+BST 260 Final Project
+Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
+
+This Rmd file is for data analysis and visualization.
+
+```{r}
+library(maps)
+library(ggplot2)
+library("SASxport")
+library(ggmap)
+library(mapdata)
+library(RColorBrewer)
+library(gganimate)
+library(dplyr)
+dat <- read.csv("data_3_expo.csv")
+dat051<- read.csv("state_05.csv") %>% select(-full, -X)
+dat061<- read.csv("state_06.csv") %>% select(-full, -X)
+dat071<- read.csv("state_07.csv") %>% select(-full, -X)
+dat081<- read.csv("2008_data_state.csv") 
+dat091<- read.csv("2009_data_state.csv") 
+dat101<- read.csv("2010_data_state.csv") 
+dat_state_05_10 <- rbind (dat051, dat061, dat071, dat081,dat091,dat101)
+```
+
+
+Our rough guesses according to the spatial distributions is confirmed by the correlation information among diseases.
+
+Mental status and heart diseases are strongly related while the correlations between asthma and other disease are very small.
+
+Based on this analysis, we use the information of heart attack to represent the three types of heart diseases. 
+
+#correlation among diseases
+
+```{r}
+library(GGally)
+ 
+# Check correlation between variables
+cor(dat_state_05_10[3:7]) 
+ 
+# Check correlations (as scatterplots), distribution and print corrleation coefficient 
+ggpairs(dat_state_05_10[3:7]) 
+ 
+# Nice visualization of correlations
+ggcorr(dat_state_05_10[3:7], method = c("everything", "pearson")) 
+```
+
+
+
+#expo VS income/race/edu
+```{r}
+library(tidyverse)
+dat_raw08 <- read.csv("2008_data_raw.csv") %>% mutate(race = ORACE2, educ = EDUCA, income = INCOME2, menthlth = MENTHLTH, heartattack = CVDINFR4, ACheartdis = CVDCRHD4, stroke = CVDSTRK3, asthma = ASTHMA2) %>%
+  select(race, educ, income, menthlth, heartattack, ACheartdis, stroke, asthma) 
+dat_raw09 <- read.csv("2009_data_raw.csv") %>% mutate(race = ORACE2, educ = EDUCA, income = INCOME2, menthlth = MENTHLTH, heartattack = CVDINFR4, ACheartdis = CVDCRHD4, stroke = CVDSTRK3, asthma = ASTHMA2) %>%
+  select(race, educ, income, menthlth, heartattack, ACheartdis, stroke, asthma) 
+dat_raw010 <- read.csv("2010_data_raw.csv") %>% mutate(race = ORACE2, educ = EDUCA, income = INCOME2, menthlth = MENTHLTH, heartattack = CVDINFR4, ACheartdis = CVDCRHD4, stroke = CVDSTRK3, asthma = ASTHMA2) %>%
+  select(race, educ, income, menthlth, heartattack, ACheartdis, stroke, asthma) 
+dat_raw <- rbind(na.omit(dat_raw08), na.omit(dat_raw09), na.omit(dat_raw010)) %>% mutate(group = c(NA)) 
+dat_raw$educ[which(dat_raw$educ == 1 | dat_raw$educ == 2)] <- c("value1")
+dat_raw$educ[which(dat_raw$educ == 3 | dat_raw$educ == 4)] <- c("value2")
+dat_raw$educ[which(dat_raw$educ == 5 | dat_raw$educ == 6)] <- c("value3")
+dat_raw$income[which(dat_raw$income == 1 | dat_raw$income == 2)] <- c("value1")
+dat_raw$income[which(dat_raw$income == 3 | dat_raw$income == 4)] <- c("value2")
+dat_raw$income[which(dat_raw$income == 5 | dat_raw$income == 6)] <- c("value3")
+dat_raw$income[which(dat_raw$income == 7 | dat_raw$income == 8)] <- c("value4")
+dat_raw$race[which(dat_raw$race == 1 )] <- c("value1")
+dat_raw$race[which(dat_raw$race == 2 )] <- c("value2")
+dat_raw$race[which(dat_raw$race == 3 )] <- c("value3")
+dat_raw$race[which(dat_raw$race == 4 | dat_raw$race == 5 |dat_raw$race == 6)] <- c("value4")
+dat_raw <- dat_raw %>% group_by(income) %>% mutate(income_num = n()) %>% ungroup() %>%
+  group_by(educ) %>% mutate(educ_num = n()) %>% ungroup() %>%
+  group_by(race) %>% mutate(race_num = n()) %>% ungroup()
+
+
+dat_raw_menthlth <- dat_raw %>% filter(menthlth > 10) %>% mutate(group = c("A"))
+dat_raw_heartattack <- dat_raw %>% filter(heartattack == 1) %>% mutate(group = c("B"))
+dat_raw_ACheartdis <- dat_raw %>% filter(ACheartdis == 1) %>% mutate(group = c("C"))
+dat_raw_stroke <- dat_raw %>% filter(stroke ==1) %>% mutate(group = c("D"))
+dat_raw_asthma <- dat_raw %>% filter(asthma ==1) %>% mutate(group = c("E"))
+dat_raw_com <- rbind(dat_raw_menthlth, dat_raw_heartattack, dat_raw_ACheartdis, dat_raw_stroke, dat_raw_asthma)
+
+dat_race <- na.omit(dat_raw_com) %>% select(group, race, race_num) %>% group_by(group, race) %>% summarise(value = n()/unique(race_num)) %>% ungroup() %>%  mutate(individual = c("race"),   observation = race) %>% select(individual, group, observation, value)
+dat_educ <- na.omit(dat_raw_com) %>% select(group, educ, educ_num) %>% group_by(group, educ) %>% summarise(value = n()/unique(educ_num)) %>% ungroup() %>% mutate(individual = c("educ"), observation = educ) %>%  select(individual, group, observation, value)
+dat_income <- na.omit(dat_raw_com) %>% select(group, income, income_num) %>% group_by(group, income) %>% summarise(value = n()/unique(income_num)) %>% ungroup() %>% mutate(individual = c("income"), observation = income) %>% select(individual, group, observation, value)
+data_bar <- rbind.data.frame(dat_race, dat_educ, dat_income) %>% arrange(group, individual, observation)
+```
+
+###population_disease
+```{r}
+dat_raw_com %>% group_by(group) %>% summarise(population = n()) %>% mutate(groupname = c("bad mental status",  "heart attack", "angina or coronary heart disease", "stroke", "asthma")) %>% select(groupname, population)
+```
+
+Among the interviewed population, the number of people suffering from potential mental illness or asthma is much larger than the number of people with heart diseases. 
+
+
+###bar_plot1
+```{r}
+# library
+data_bar_heart <- data_bar %>% filter(!group %in%  c("A","E"))
+
+library(tidyverse)
+library(viridis)
+ 
+# Set a number of 'empty bar' to add at the end of each group
+empty_bar=2
+nObsType=nlevels(as.factor(data_bar_heart$observation))
+to_add = data.frame( matrix(NA, empty_bar*nlevels(as.factor(data_bar_heart$group))*nObsType, ncol(data_bar_heart)) )
+colnames(to_add) = colnames(data_bar_heart)
+to_add$group=rep(levels(as.factor(data_bar_heart$group)), each=empty_bar*nObsType )
+data_bar_heart=rbind(data_bar_heart, to_add)
+data_bar_heart=data_bar_heart%>% arrange(group, individual)
+data_bar_heart$id=c(rep( seq(1, 15) , c(rep(c(3,4,4,4,4),3))))
+
+# Get the name and the y position of each label
+label_data= data_bar_heart %>% group_by(id, individual) %>% summarize(tot=sum(value))
+number_of_bar=nrow(label_data)
+angle= 90 - 360 * (label_data$id-0.5) /number_of_bar     # I substract 0.5 because the letter must have the angle of the center of the bars. Not extreme right(1) or extreme left (0)
+label_data$hjust<-ifelse( angle < -90, 1, 0)
+label_data$angle<-ifelse(angle < -90, angle+180, angle)
+ 
+# prepare a data frame for base lines
+base_data=data_bar_heart %>% 
+  group_by(group) %>% 
+  summarize(start=min(id), end=max(id) - empty_bar) %>% 
+  rowwise() %>% 
+  mutate(title=mean(c(start, end)))
+ 
+# prepare a data frame for grid (scales)
+grid_data = base_data
+grid_data$end = grid_data$end[ c( nrow(grid_data), 1:nrow(grid_data)-1)] + 1
+grid_data$start = grid_data$start - 1
+grid_data=grid_data[-1,]
+ 
+# Make the plot
+p = ggplot(data_bar_heart) +      
+  
+  # Add the stacked bar
+  geom_bar(aes(x=as.factor(id), y=value, fill=observation), stat="identity", alpha=0.5) +
+  scale_fill_viridis(discrete=TRUE) +
+  
+  # Add a val=100/200/300/400 lines. I do it at the beginning to make sur barplots are OVER it.
+  geom_segment(data=grid_data, aes(x = end, y = 0, xend = start, yend = 0), colour = "grey", alpha=1, size=1 , inherit.aes = FALSE ) +
+  geom_segment(data=grid_data, aes(x = end, y = 0.08, xend = start, yend = 0.08), colour = "grey", alpha=1, size=0.3 , inherit.aes = FALSE ) +
+  geom_segment(data=grid_data, aes(x = end, y = 0.16, xend = start, yend = 0.16), colour = "grey", alpha=1, size=0.3 , inherit.aes = FALSE ) +
+  geom_segment(data=grid_data, aes(x = end, y = 0.24, xend = start, yend = 0.24), colour = "grey", alpha=1, size=0.3 , inherit.aes = FALSE ) +
+  geom_segment(data=grid_data, aes(x = end, y = 0.32, xend = start, yend = 0.32), colour = "grey", alpha=1, size=0.3 , inherit.aes = FALSE ) +
+  
+  # Add text showing the value of each 100/75/50/25 lines
+  annotate("text", x = rep(max(data_bar_heart$id),5), y = c(0, 0.08, 0.16, 0.24, 0.32), label = c("0", "8%", "16%", "24%", "32%") , color="grey", size=6 , angle=0, fontface="bold", hjust=1) +
+  
+  ylim(-0.16,max(label_data$tot+0.08, na.rm=T)) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    axis.text = element_blank(),
+    axis.title = element_blank(),
+    panel.grid = element_blank(),
+    plot.margin = unit(rep(-1,4), "cm") 
+  ) +
+  coord_polar() +
+  
+  # Add labels on top of each bar
+  geom_text(data=label_data, aes(x=id, y=tot+0.02, label=individual, hjust=hjust), color="black", fontface="bold",alpha=0.6, size=5, angle= label_data$angle, inherit.aes = FALSE ) +
+  
+  # Add base line information
+  geom_segment(data=base_data, aes(x = start, y = -0.0001, xend = end, yend = -0.0001), colour = "black", alpha=0.8, size=0.6 , inherit.aes = FALSE )  +
+  geom_text(data=base_data, aes(x = title, y = -0.02, label=group), hjust=c(1,1,0), colour = "black", alpha=0.8, size=4, fontface="bold", inherit.aes = FALSE)
+p
+```
+
+
+
+###bar_plot2
+```{r}
+data_bar_disease <- data_bar %>% filter(group %in% c("A", "B", "E"))
+# library
+library(tidyverse)
+library(viridis)
+
+# Set a number of 'empty bar' to add at the end of each group
+empty_bar=2
+nObsType=nlevels(as.factor(data_bar_disease$observation))
+to_add = data.frame( matrix(NA, empty_bar*nlevels(as.factor(data_bar_disease$group))*nObsType, ncol(data_bar_disease)))
+colnames(to_add) = colnames(data_bar_disease)
+to_add$group=rep(levels(as.factor(data_bar_disease$group)), each=empty_bar*nObsType )
+data_bar_disease=rbind(data_bar_disease, to_add)
+data_bar_disease=data_bar_disease %>% arrange(group, individual)
+data_bar_disease$id=c(rep( seq(1, 15) , c(rep(c(3,4,4,4,4),3))))
+ 
+# Get the name and the y position of each label
+label_data= data_bar_disease %>% group_by(id, individual) %>% summarize(tot=sum(value))
+number_of_bar=nrow(label_data)
+angle= 90 - 360 * (label_data$id-0.5) /number_of_bar     # I substract 0.5 because the letter must have the angle of the center of the bars. Not extreme right(1) or extreme left (0)
+label_data$hjust<-ifelse( angle < -90, 1, 0)
+label_data$angle<-ifelse(angle < -90, angle+180, angle)
+ 
+# prepare a data frame for base lines
+base_data=data_bar_disease %>% 
+  group_by(group) %>% 
+  summarize(start=min(id), end=max(id) - empty_bar) %>% 
+  rowwise() %>% 
+  mutate(title=mean(c(start, end)))
+ 
+# prepare a data frame for grid (scales)
+grid_data = base_data
+grid_data$end = grid_data$end[ c( nrow(grid_data), 1:nrow(grid_data)-1)] + 1
+grid_data$start = grid_data$start - 1
+grid_data=grid_data[-1,]
+ 
+# Make the plot
+p = ggplot(data_bar_disease) +      
+  
+  # Add the stacked bar
+  geom_bar(aes(x=as.factor(id), y=value, fill=observation), stat="identity", alpha=0.5) +
+  scale_fill_viridis(discrete=TRUE) +
+  
+  # Add a val=1.6/1.2/0.8/0.4 lines. I do it at the beginning to make sur barplots are OVER it.
+  geom_segment(data=grid_data, aes(x = end, y = 0, xend = start, yend = 0), colour = "black", alpha=1, size=0.3 , inherit.aes = FALSE ) +
+  geom_segment(data=grid_data, aes(x = end, y = 0.4, xend = start, yend = 0.4), colour = "black", alpha=1, size=0.3 , inherit.aes = FALSE ) +
+  geom_segment(data=grid_data, aes(x = end, y = 0.8, xend = start, yend = 0.8), colour = "black", alpha=1, size=0.3 , inherit.aes = FALSE ) +
+  geom_segment(data=grid_data, aes(x = end, y = 1.2, xend = start, yend = 1.2), colour = "black", alpha=1, size=0.3 , inherit.aes = FALSE ) +
+  geom_segment(data=grid_data, aes(x = end, y = 1.6, xend = start, yend = 1.6), colour = "black", alpha=1, size=0.3 , inherit.aes = FALSE ) +
+  
+  # Add text showing the value of each 100/75/50/25 lines
+  annotate("text", x = rep(max(data_bar_disease$id),5), y = c(0, 0.4, 0.8, 1.2, 1.6), label = c("0", "0.4", "0.8", "1.2", "1.6") , color="black", size=6 , angle=0, fontface="bold", hjust=1) +
+  
+  ylim(-0.13,max(label_data$tot+0.4, na.rm=T)) +
+  theme_minimal() +
+  theme(
+    axis.text = element_blank(),
+    axis.title = element_blank()
+  ) +
+  
+  # Add labels on top of each bar
+  geom_text(data=label_data, aes(x=id, y=-0.12, label=individual, hjust=hjust), color="black", fontface="bold",alpha=0.6, size=4, inherit.aes = FALSE ) +
+  
+  # Add base line information
+  geom_segment(data=base_data, aes(x = start, y = -0.0001, xend = end, yend = -0.0001), colour = "black", alpha=0.8, size=0.6 , inherit.aes = FALSE )  +
+  geom_text(data=base_data, aes(x = title, y = -0.05, label=group), colour = "black", alpha=0.8, size=4, fontface="bold", inherit.aes = FALSE)
+p
+```
+
+The two barplots above are used to discribe different proportions of patients with a certain disease in a group of people with a same socioeconomic feature. For example, let's look at the first bar of group A in the left plot. The length of green bar means the proportion of people with bad mental status (feel not good more than 10 days in a month) in a group of people with graduate level of education. Considering with other two bars with different color, it is not hard to come to a conclusion that the proportion of people with bad mental status in high-income group is lower than the proportion of patients in low-income group.
+Socioeconomic patterns of the five diseases are very similar：
+The proportion of patients in high-income group is lower than the proportion of patients in low-income group;
+The proportion of patients in high-educated groups is lower than the proportion of patients in poor-educated groups;
+The proportion of patients in Asian people is the lowest, while the proportion of patients in black people is the highest;
+
+
+
+
+#More data 
+```{r}
+quantile(dat$menthlth, 0.5, na.rm = TRUE)
+quantile(dat$heartattack, 0.5, na.rm = TRUE)
+quantile(dat$ACheartdis, 0.5, na.rm = TRUE)
+quantile(dat$stroke, 0.5, na.rm = TRUE)
+quantile(dat$asthma, 0.5, na.rm = TRUE)
+dat_class <- dat%>% filter(!is.na(menthlth) & !is.na(heartattack) & 
+                             !is.na(ACheartdis) & !is.na(stroke) & !is.na(asthma)) %>%
+  mutate(menthlth_class = ifelse(menthlth >= 10, 1, 0)) %>%
+  mutate(heartattack_class = ifelse(heartattack >= 0.06, 1, 0)) %>%
+  mutate(ACheartdis_class = ifelse(ACheartdis >= 0.06, 1, 0)) %>%
+  mutate(stroke_class = ifelse(stroke >= 0.04, 1, 0)) %>%
+  mutate(asthma_class = ifelse(asthma >= 0.12, 1, 0)) 
+```
+
+
+
+
+
+
+#lifestyple VS mental_class
+```{r}
+library(car)
+library(RColorBrewer)
+train_set <- read.csv("train.csv")
+test_set <- read.csv("test.csv")
+# Make the plot
+my_colors <- brewer.pal(nlevels(as.factor(train_set$mental_class)), "Set2")
+scatterplotMatrix(~smoke+drink+exercise|mental_class, data=train_set , reg.line="" , smoother="", col=my_colors , smoother.args=list(col="grey") , cex=0.5 , pch=c(15,16,17), main="The Impact of Lifestyle on Mental Status")
+ 
+
+```
+
+Correlation is not causation. However,  the exploration of correlations between lifestyle and mental status would probably help us remain in a relatively better mental status. So, what could we learn from the plot above?
+The dataset to make this plot is based on the US county level with "smoke" representing the proportion of people ever diagnosed with smoking in a county, "drink" representing the proportion of people ever diagnosed with drinking and "exercise" representing the proportion of people exercised in the past 30 days.
+Not surprising, counties where majorities of people have a bad mental status (green) have a larger smoking group and smaller exercise group. However, a larger drinking group in such counties is inconsistent with our expectation. 
+So why people what to drink? Do you think people tend to immersed in sadness and alcohol? Probably not!  They may simply drink trouble away!
+
+
+
+#plot for missing data
+
+colnames(dat)
+length(colnames(dat))
+missing <- data.frame(disease = rep(c("menthlth", "heartattack", "ACheartdis", "stroke", "asthma"),each = 50), )
+
+missing_menthlth <- dat %>% filter(menthlth != "NA") %>% 
+  summarise(age = sum(which(age != "NA")), 
+            sex = sum(which(sex != "NA")),
+            white = sum(which(white != "NA")),
+            black = sum(which(black != "NA")),
+            asian = sum(which(asian != "NA")),
+            race_other = sum(which(race_other != "NA")),
+            educ1 = sum(which(educ1 != "NA")),
+            educ2 = sum(which(educ2 != "NA")),
+            educ3 = sum(which(educ3 != "NA")),
+            income1 = sum(which(income1 != "NA")),
+            income2 = sum(which(income2 != "NA")),
+            income3 = sum(which(income3 != "NA")),
+            income4 = sum(which(income4 != "NA")),
+            income5 = sum(which(income5 != "NA")),
+            income6 = sum(which(income6 != "NA")),
+            income7 = sum(which(income7 != "NA")),
+            income8 = sum(which(income8 != "NA")),
+            married = sum(which(married != "NA")),
+            unmarried = sum(which(unmarried != "NA")),
+            employed = sum(which(employed != "NA")),
+            out_of_work = sum(which(out_of_work != "NA")),
+            homemaker = sum(which(homemaker != "NA")),
+            student = sum(which(student != "NA")),
+            employ_other = sum(which(employ_other != "NA")),
+            hlthplan = sum(which(hlthplan != "NA")),
+            exercise = sum(which(exercise != "NA")),
+            smoke = sum(which(smoke != "NA")),
+            drink = sum(which(drink != "NA")),
+            bmi_cat1 = sum(which(bmi_cat1 != "NA")),
+            bmi_cat2 = sum(which(bmi_cat2 != "NA")),
+            bmi_cat3 = sum(which(bmi_cat3 != "NA")),
+            bmi_cts = sum(which(bmi_cts != "NA")),
+            genhlth_ex = sum(which(genhlth_ex != "NA")),
+            genhlth_vg = sum(which(genhlth_vg != "NA")),
+            gentlth_go = sum(which(genhlth_go != "NA")),
+            genhlth_fa = sum(which(genhlth_fa != "NA")),
+            genhlth_po = sum(which(genhlth_po != "NA")),
+            qlactlm = sum(which(qlactlm != "NA")),
+            pm2.5 = sum(which(pm2.5 != "NA")),
+            ozone = sum(which(ozone != "NA")),
+            greenness = sum(which(greenness != "NA")))
+            
+                        
+
+
+
+```{r}
+library(dplyr)
+library(wakefield)
+library(Amelia)
+missmap(dat, main = "Missingness Map", col = c("white", "darkgreen"), rank.order = TRUE)
+```
+
