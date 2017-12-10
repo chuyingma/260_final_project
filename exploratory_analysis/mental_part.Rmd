@@ -955,7 +955,7 @@ data_all = read_csv("data_exposure_00_10.csv")
 
 group_men_fit = data_all %>%
   dplyr::select(-c(fips,state,county)) %>%
-  ggplot(aes(menthlth,pm2.5)) +
+  ggplot(aes(pm2.5, menthlth)) +
   geom_point(alpha = 0.2,col = "dodgerblue1") +
   geom_smooth(method = "lm",col = "black") +
   facet_wrap(~ year) +
@@ -1030,7 +1030,7 @@ Draw the Pearson correlation map:
 ```{r}
 data = read_csv("~/Desktop/Harvard/fall 2017/bst260/project/data_3_expo.csv")
 data = data %>% 
-  dplyr::select( menthlth, black,educ2,income1,income4,married,employed,out_of_work, homemaker,student,hlthplan ,smoke,drink ,genhlth_ex,genhlth_fa ,genhlth_po , qlactlm ,pm2.5)
+  dplyr::select(income7,employed,out_of_work,homemaker,student,hlthplan,exercise,smoke, drink,genhlth_fa ,genhlth_po ,qlactlm,pm2.5 ,ozone,greenness)
 
 data = data[complete.cases(data),]
 ```
@@ -1134,6 +1134,7 @@ firstly I want to label each state but it turns out there are too much so I give
 
 ```{r,warning=FALSE}
 library(ggrepel)
+library(dplyr)
 ds_theme_set()
 
 data_all = read.csv("data_3_expo.csv")
@@ -1151,8 +1152,8 @@ data_all = data_all %>%
   left_join(st.codes,by = c("state.y" = "full"))
 
 data_all_10 = data_all %>%
-  filter(year == 2010) %>%
-  mutate(menthlth_hat = predict(mod17, newdata = .))
+  dplyr::filter(year == 2010) %>%
+  mutate(menthlth_hat = predict(mod20, newdata = .))
 
 data_all_10 %>%
   ggplot(aes(menthlth_hat,menthlth,col = state,label = state)) +
