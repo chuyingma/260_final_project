@@ -1,0 +1,77 @@
+---
+title: "Overview"
+author: "Jie Yin, Jingjing Tang, Chuying Ma, Xuewei Zhang"
+date: "12/8/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Impact of Air Quality, Greenness, and Socioeconomic Status on Chronic Diseases Prevalence in the U.S. 
+
+###Overview
+
+####Motivation
+
+Chronic Diseases are major public health issues in the U.S. and worldwide, both in their own rights and because the conditions are resulting morbidity and mortality. Despite their public health importance, little is known about its geographic distribution in the U.S. In addition, national level epidemiological study of the association between environmental and socioeconomic exposures and chronic diseases prevalence is still limited.
+
+The motivation of this study stems from several questions:
+
+1. What are the spatial-temporal patterns of the chronic disease prevalence (e.g. mental health, heart diseases and asthma) in the U.S. county level.
+2. Are environmental exposure (e.g. PM2.5, greenness) disproportionately impact poor and minority populations across the country?
+3. Do environmental pollution and some socioeconomic factors cast a blight on the prevalence of chronic disease? 
+4. Could the environmental exposures and socioeconomic factors help to predict the possible trend of the chronic disease prevalence?
+
+###Dataset
+
+####Data Description
+
+1. **Behavioral Risk Factor Surveillance System (BRFSS) annual survey data (2000-2010)**
+
+* Source: [CDC](https://www.cdc.gov/brfss/annual_data/annual_data.htm)
+* Level: individual (could be aggregte to county level by state code and county code)
+* Content: demographic information, chronic diseases information and socioeconomic information
+
+2. **Normalized Difference Vegetation Index (NDVI) data (2000-2010)**
+
+* Source: Moderate Resolution Imaging Spectroradiometer (MODIS), NSAS
+* Level: county
+* Content: NDVI, measuring greenness exposure.
+
+3. **Simulated Air quality data (2000-2012)**
+
+* Source: Qian Di (ScD candidate, Department of Environmental Health. Have his permission of using this data for BST260 project)
+* Level: zipcode level (could be aggregated to county level)
+* Content: PM2.5, ozone
+
+4. **NCHS Urban-Rural Classification Scheme for Counties**
+
+* Source: [CDC](https://www.cdc.gov/nchs/data_access/urban_rural.htm)
+* Level: county
+* Content: urbanization levels of counties (for classification)
+
+5. **Climate regions**
+
+* Source: [NOAA](https://www.ncdc.noaa.gov/monitoring-references/maps/us-climate-regions.php)
+* Level: state
+* Content: nine climatically consistent regions within the contiguous U.S.
+
+####Data Wrangling
+
+Data wrangling is always a crucial step for any kind of data science project, especially for our project! It is no exaggeration to say that our group have spent more than half of our time cleaning these messy data sets!
+
+Our journey for data wrangling is presented below:
+
+* Select the related variables from BRFSS data, which contains nearly 300 variables and around 300,000 records each year, from year 2000 to 2010.
+* Assign uniform variable names for each year's data set and mutate a "FIPS" variable (combination of state code and county code) for future table joining.
+* Aggregate individual level data in BRFSS to county level by calculating the mean of continuous variables and percentage of categorical variables.
+* Replace the value of "None", "Don't know/Not sure", "Refused" into "NA"
+* Join datasets including "NDVI", "Air quality", "Urban-Rural Classification Scheme" by FIPS and join dataset of "Climate regions" by state code.
+
+[procedure](https://drive.google.com/open?id=1VKgQ0THFXva0iLL1tvIpgFhaiXAruO76)
+
+
+
+
