@@ -5,11 +5,11 @@ date: "November 30, 2017"
 output: html_document
 ---
 
+
 ##BST 260 Final Project
 ##Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
 
-This Rmd file is for studying the relationship between environmental exposures and socioeconomic variables
-
+This Rmd file is for studying the association between environmental exposures and socioeconomic variables
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -18,25 +18,16 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyverse)
 library(gridExtra)
-
-library(maps)
-library(ggmap)
-library(mapdata)
-library(dplyr)
-library(dslabs)
-
-library(tidyr)
 ```
 
 Load data
 ```{r}
-ds_theme_set()
 dat <- read.csv("data_3_expo.csv")
 ```
 
 Q: Are environmental exposure (e.g. PM2.5, ozone, greenness) disproportionately impact poor and minority populations across the country?
 
-```{r,warning=FALSE}
+```{r}
 ##pm2.5 in race
 p1 <- dat %>% ggplot(aes(white, pm2.5)) +
   geom_point (alpha = 0.5,col = "lightgreen") +
@@ -94,26 +85,34 @@ i8 <- dat %>% ggplot(aes(income8, pm2.5)) +
 grid.arrange(i1, i2, i3, i4, i5, i6, i7, i8, ncol=3)
 ```
 
-```{r,warning=FALSE}
+```{r}
 ##pm2.5 in education
 e1 <- dat %>% ggplot(aes(educ1, pm2.5)) +
   geom_point (alpha = 0.5,col = "darkslategrey") +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm") +
+  xlab("below high school")
 
 e2 <- dat %>% ggplot(aes(educ2, pm2.5)) +
   geom_point (alpha = 0.5,col = "darkslategrey") +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm") +
+  xlab("high school")
 
 e3 <- dat %>% ggplot(aes(educ3, pm2.5)) +
   geom_point (alpha = 0.5,col = "darkslategrey") +
-  geom_smooth(method = "lm")
-
-grid.arrange(e1, e2, e3, ncol=2)
+  geom_smooth(method = "lm") +
+  xlab("college and beyond") 
+    
+grid.arrange(e1, e2, e3, ncol=2) 
+  
 ```
 
-Regression: pm2.5 ~ %without colleage degree + %non-white + %in poverty
+Run Linear Regression: pm2.5 ~ %without colleage degree + %non-white + %in poverty
 
-
+```{r}
+newdata <- dat %>% mutate(black_percent = black, belowhighschool_percent = educ1, lowincome_percent = income1+income2)
+fit <- lm(pm2.5 ~ black_percent + belowhighschool_percent + lowincome_percent, data = newdata)
+summary(fit)
+```
 
 
 
