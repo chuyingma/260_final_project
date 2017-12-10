@@ -46,3 +46,17 @@ ggplot() +
   theme(legend.position="none") +
   coord_equal()
 ```
+
+
+
+###Word Cloud
+```{r}
+# library
+library(wordcloud2) 
+
+# have a look to the example dataset
+wordcloud <- data.frame(word = sample(c("state", "county","year", "mental", "heart-attack","Angina", "Coronary", "stroke", "asthma", "age", "sex", "race", "education", "income", "marital", "employment", "plan", "exercise", "smoke", "drink", "BMI", "general", "activity", "KNN", "logistic", "random forest", "QDA", "LDA", "regression", "visualization", "air", "disease", "quality", "classification", "analysis", "bad", "plot", "linear", "multivariate", "consideration", "thinking"), 1000, replace = TRUE),
+                        freq = sample(seq(100,200,2), 1000, replace = TRUE)) 
+wordcloud2(wordcloud, size = 0.2)
+```
+
