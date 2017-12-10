@@ -1,14 +1,17 @@
 ---
-title: "asthma by county level"
+title: "Visualization -- Part 3. Asthma"
 author: "Xuewei Zhang"
 data: "12/08/2017"
 output: html_document
 ---
 
-BST 260 Final Project
-Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
 
-This Rmd file is for plotting asthma distribution by county level
+##BST 260 Final Project
+##Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
+
+This Rmd file is for plotting asthma distribution by county level from 2000 to 2010, to see if there is any pattern in it.
+
+###Part 1. Map for asthma disease in the county level from 2000 to 2010
 
 ```{r}
 library(dplyr)
@@ -37,4 +40,37 @@ map_all_year = ggplot(men_df, aes(long, lat,group = group)) +
 map_all_year
 ```
 
+##Conclusion
 
+From year 2000-2010, the distribution of asthma is geographically distinctive. 
+
+In general, people in the west part is more likely to catch asthma than people in east part. Due to some missing values in the middle part of United States, the states which have high probability of catching asthma are California, which has some obvious red spots.
+
+Although there are some missing values in the middle part, we can also see that there is lower probability of asthma population in the middle and eastern part. Especially the states like Louisiana and Alabama, they are the good places to live to for the people who are suffering from asthma.
+
+###Part 2. Univariate analysis for income vs asthma:
+
+```{r,warning=FALSE}
+library(readr)
+library(dplyr)
+library(tidyverse)
+library(broom)
+library(dslabs)
+ds_theme_set()
+data_all = read_csv("data_exposure_00_10.csv")
+
+group_as_fit = data_all %>%
+  dplyr::select(-c(fips,state,county)) %>%
+  ggplot(aes(income1,asthma)) +
+  geom_point(alpha = 0.2,col = "darkorchid2") +
+  geom_smooth(method = "lm",col = "black") +
+  facet_wrap(~ year) +
+  ggtitle("income1 vs asthma") +
+  xlim(0,0.75) +
+  ylim(0,0.5)
+group_as_fit
+```
+
+##Conclusion
+
+If more people in the 'income1' category, there are more asthma diseases, which means people who are poor are more likely to have asthma
