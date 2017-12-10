@@ -1,5 +1,5 @@
 ---
-title: "Heart_disease_part"
+title: "Visualization-Heart Diseases Part"
 author: "Jingjing_Tang"
 date: "12/9/2017"
 output: html_document
@@ -8,8 +8,16 @@ BST 260 Final Project
 Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
 
 This Rmd file is for plotting heart diseases distribution by county level
+
 ###Graph to show the spatial distribution
 heart disease map county level
+
+As for heart diseases,  three related questions were asked:
+  1. Have you ever diagnosed with Heart Attack?
+  2. Have you ever diagnosed with Angina or Coronary Heart Disease?
+  3. Have you ever diagnosed  with a Stroke?
+Since there are too many missing values in these three variables, only datasets from 2005 to 2010 are taken into account.
+
 ```{r}
 library(maps)
 library(ggplot2)
@@ -149,3 +157,7 @@ dat_state_05_10 %>%
     ggtitle("The proportion of people ever diagnosed with stroke in US states from 2005 to 2010") + 
     ylab("") + xlab("") 
 ```
+
+As expected, the distributions of heart attack rate, angina or coronary heart disease rate and stroke rate are very similar.  It is apparent that rates of the three types of heart diseases in 2008-2010 is slightly higher than 2005-2007 especially in the South Eastern U.S.
+But  does that mean you get a higher probability to develop a heart disease,  if you live in the South Eastern US? Not exactly.  Perhaps, this is just an interesting coincidence.
+What interests us is that the incidence of heart diseases in Kentucky, West Virginia or Puerto Rico is also very high, which lead to our thinking that there might be a link between heart diseases and mental health status.
