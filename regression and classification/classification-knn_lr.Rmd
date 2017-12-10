@@ -39,6 +39,12 @@ y_hat_logit <- ifelse(p_hat_logit > 0.5, 1, 0)
 confusionMatrix(data = y_hat_logit, reference = test_set$mental_class)
 ```
 
+Logistic regression dose not assume there is a linear relationship and can handle nonlinear effects，although it requires a large amount of data to achieve stable and meaningful results. It will lead to optimum decision making because it does not try to trick the predictive signal into incorporating a utility function that is implicit whenever you classify observations. In terms of our project, there does exists much data since we trains the datasets of nearly all of the counties in the US for ten years. 
+The result turns out like this:
+Sensitivity : 0.5585          
+Specificity : 0.8627 
+   Accuracy : 0.7528
+which means logistic regression is quite suitable to be a reference to consider a person with relatively good mental status. However, this method is not good enough to help us detect potential mental problems of people.
 
 ## KNN
 
@@ -61,7 +67,7 @@ data.frame(x, accuracy) %>% ggplot(aes(x, accuracy))+
   scale_x_continuous(breaks = c(seq(0, 100, 25), x[which.max(accuracy)]))
 ```
 
-so, k=35
+so, k=13
 
 ```{r}
 f_hat <- predict(knn_fit, newdata = na.omit(test_set))[,2]
@@ -71,3 +77,5 @@ f_hat_train <- predict(knn_fit, newdata = na.omit(train_set))[,2]
 tab <- table(pred=round(f_hat_train), truth=na.omit(train_set)$mental)
 confusionMatrix(tab)$overall["Accuracy"]
 ```
+
+Similarly, KNN would perform better if data is large enough. But the computational cost for KNN is quite high because we need to distance of each query instance to all training samples.  The plot shows that when K equals 13, we achieve the highest accuracy.
