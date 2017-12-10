@@ -1,5 +1,5 @@
 ---
-title: "regression"
+title: "Regression -- relationship between asthma and other covariates"
 author: "Xuewei Zhang"
 data: "12/08/2017"
 output: html_document
@@ -25,17 +25,6 @@ names(year_expo3)
 year_expo4 = read.csv("data_exposure_00_10.csv")
 ```
 
-relationship between mental heath and ozone
-```{r}
-year_expo3 %>%
-  dplyr::select(-c(fips,state,county)) %>%
-  ggplot(aes(menthlth,ozone)) +
-  geom_point() +
-  geom_smooth(method = "lm") +
-  facet_wrap(~ year) +
-  ggtitle("mental health vs ozone")
-
-```
 
 relationship between asthma and smoke
 ```{r}
@@ -49,6 +38,9 @@ year_expo3 %>%
 
 ```
 
+##Conclusion
+Not very clear univariate relationship
+
 relationship between asthma and income1, which has a relatively positively relationship
 ```{r}
 year_expo4 %>%
@@ -61,21 +53,6 @@ year_expo4 %>%
   scale_y_continuous(limits=c(0, 0.5))
 ```
 
-
-relationship between mental health and ozone
-```{r}
-year_expo3 %>%
-  dplyr::   select(-c(fips,state,county)) %>%
-  ggplot(aes(menthlth,ozone)) +
-  geom_point() +
-  geom_smooth(method = "lm") +
-  facet_wrap(~ year) +
-  ggtitle("mental health vs ozone")
-
-names(year_expo4)
-```
-
-
-
-
+##Conclusion
+slightly positive relationship between asthma and the proportional of people in the low income group
 
