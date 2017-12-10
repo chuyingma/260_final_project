@@ -1,0 +1,135 @@
+---
+title: "Regression -- disparity between exposure and socioeconomic variables"
+author: "JY"
+date: "November 30, 2017"
+output: html_document
+---
+
+
+##BST 260 Final Project
+##Group: Chuying Ma, Jingjing Tang, Jie Yin, Xuewei Zhang
+
+This Rmd file is for studying the association between environmental exposures and socioeconomic variables
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(gridExtra)
+```
+
+Load data
+```{r}
+dat <- read.csv("data_3_expo.csv")
+```
+
+Q: Are environmental exposure (e.g. PM2.5, ozone, greenness) disproportionately impact poor and minority populations across the country?
+
+```{r}
+##pm2.5 in race
+p1 <- dat %>% ggplot(aes(white, pm2.5)) +
+  geom_point (alpha = 0.5,col = "lightgreen") +
+  geom_smooth(method = "lm")
+
+p2 <- dat %>% ggplot(aes(black, pm2.5)) +
+  geom_point (alpha = 0.5,col = "lightgreen") +
+  geom_smooth(method = "lm")
+
+p3 <- dat %>% ggplot(aes(asian, pm2.5)) +
+  geom_point (alpha = 0.5,col = "lightgreen") +
+  geom_smooth(method = "lm")
+
+p4 <- dat %>% ggplot(aes(race_other, pm2.5)) +
+  geom_point (alpha = 0.5,col = "lightgreen") +
+  geom_smooth(method = "lm")
+
+grid.arrange(p1, p2, p3, p4, ncol=2)
+```
+
+```{r,warning=FALSE}
+##pm2.5 in income
+i1 <- dat %>% ggplot(aes(income1, pm2.5)) +
+  geom_point (alpha = 0.5,col = "deepskyblue") +
+  geom_smooth(method = "lm")
+
+i2 <- dat %>% ggplot(aes(income2, pm2.5)) +
+  geom_point (alpha = 0.5,col = "deepskyblue") +
+  geom_smooth(method = "lm")
+
+i3 <- dat %>% ggplot(aes(income3, pm2.5)) +
+  geom_point (alpha = 0.5,col = "deepskyblue") +
+  geom_smooth(method = "lm")
+
+i4 <- dat %>% ggplot(aes(income4, pm2.5)) +
+  geom_point (alpha = 0.5,col = "deepskyblue") +
+  geom_smooth(method = "lm")
+
+i5 <- dat %>% ggplot(aes(income5, pm2.5)) +
+  geom_point (alpha = 0.5,col = "deepskyblue") +
+  geom_smooth(method = "lm")
+
+i6 <- dat %>% ggplot(aes(income6, pm2.5)) +
+  geom_point (alpha = 0.5,col = "deepskyblue") +
+  geom_smooth(method = "lm")
+
+i7 <- dat %>% ggplot(aes(income7, pm2.5)) +
+  geom_point (alpha = 0.5,col = "deepskyblue") +
+  geom_smooth(method = "lm")
+
+i8 <- dat %>% ggplot(aes(income8, pm2.5)) +
+  geom_point (alpha = 0.5,col = "deepskyblue") +
+  geom_smooth(method = "lm")
+
+grid.arrange(i1, i2, i3, i4, i5, i6, i7, i8, ncol=3)
+```
+
+```{r}
+##pm2.5 in education
+e1 <- dat %>% ggplot(aes(educ1, pm2.5)) +
+  geom_point (alpha = 0.5,col = "darkslategrey") +
+  geom_smooth(method = "lm") +
+  xlab("below high school")
+
+e2 <- dat %>% ggplot(aes(educ2, pm2.5)) +
+  geom_point (alpha = 0.5,col = "darkslategrey") +
+  geom_smooth(method = "lm") +
+  xlab("high school")
+
+e3 <- dat %>% ggplot(aes(educ3, pm2.5)) +
+  geom_point (alpha = 0.5,col = "darkslategrey") +
+  geom_smooth(method = "lm") +
+  xlab("college and beyond") 
+    
+grid.arrange(e1, e2, e3, ncol=2) 
+  
+```
+
+Run Linear Regression: pm2.5 ~ %without colleage degree + %non-white + %in poverty
+
+```{r}
+newdata <- dat %>% mutate(black_percent = black, belowhighschool_percent = educ1, lowincome_percent = income1+income2)
+fit <- lm(pm2.5 ~ black_percent + belowhighschool_percent + lowincome_percent, data = newdata)
+summary(fit)
+```
+
+
+##conclusion
+
+In our dataset, there are three main social economics factors: race, income and education. We want to explore the association between PM 2.5 and these three factors. In order to reduce bias, we condition on these factors and see in each strata, the effect of PM 2.5 on these factors.
+
+
+PM2.5 disparity among race: in the black strata at county level, the PM2.5 exposure is positively associated with the percentage of people. However, in the white strata, the PM2.5 is negatively associated with the percentage of people.
+
+
+PM2.5 disparity among different income level: in low income strata (income1~income3) at county level, the PM2.5 exposure is positively associated with the percentage of people. However, in most of the middle and high income strata, the PM2.5 exposure is negatively associated with the percentage of people.
+
+
+PM2.5 disparity among different education level: in below high school (edu1) and high school strata (educ2) at county level, the pm2.5 exposure is positively associated with the percentage of people. However, in college and beyond strata (educ3), the PM2.5 exposure is negatively associated with the percentage of people.
+
+
+
+
+
+
