@@ -58,6 +58,15 @@ The motivation of this study stems from several questions:
 * Level: state
 * Content: nine climatically consistent regions within the contiguous U.S.
 
+
+If you want to know more about the exact data involved in our project, you could refer to our Google Drive folder.
+
+Here is the link:
+
+[Google Drive](https://drive.google.com/drive/folders/1FF6n2uUJTZfwq9mF1r96ag1t3TDFXop_?usp=sharing)
+
+
+
 ####Data Wrangling
 
 Data wrangling is always a crucial step for any kind of data science project, especially for our project! It is no exaggeration to say that our group have spent more than half of our time cleaning these messy data sets!
@@ -71,6 +80,7 @@ Our journey for data wrangling is presented below:
 * Join datasets including "NDVI", "Air quality", "Urban-Rural Classification Scheme" by FIPS and join dataset of "Climate regions" by state code.
 
 [procedure](https://drive.google.com/open?id=1VKgQ0THFXva0iLL1tvIpgFhaiXAruO76)
+
 
 
 
